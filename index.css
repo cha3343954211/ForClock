@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Custom theme extensions */
+@theme {
+  --breakpoint-portrait: raw:(orientation: portrait);
+  --breakpoint-landscape: raw:(orientation: landscape);
+}
+
+/* Hide scrollbar for cleaner screensaver look */
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

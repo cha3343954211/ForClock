@@ -1,0 +1,7 @@
+{
+  "name": "For Clock",
+  "description": "An aesthetic, customizable clock screensaver featuring multiple themes (Digital, Analog, Neon) and AI-generated poetic reflections on the passing of time.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
