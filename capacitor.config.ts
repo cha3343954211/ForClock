@@ -1,8 +1,8 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+﻿import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.zenclock.app',
-  appName: 'ZenClock',
+  appId: 'com.forclock.app',
+  appName: 'For Clock',
   webDir: 'dist',
   android: {
     // Allow WebView to use camera

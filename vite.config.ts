@@ -1,4 +1,4 @@
-import path from 'path';
+﻿import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -48,8 +48,8 @@ export default defineConfig(({ mode }) => {
           ]
         },
         manifest: {
-          name: 'ZenClock - 禅意时钟',
-          short_name: 'ZenClock',
+          name: 'For Clock - 禅意时钟',
+          short_name: 'For Clock',
           description: '极简禅意时钟屏保，融合 AI 感悟与手势交互',
           theme_color: '#1A1A1A',
           background_color: '#1A1A1A',

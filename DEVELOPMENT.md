@@ -1,6 +1,6 @@
-# ZenClock Development Guide
+﻿# For Clock Development Guide
 
-This document provides comprehensive information for developers who want to contribute to or extend ZenClock.
+This document provides comprehensive information for developers who want to contribute to or extend For Clock.
 
 ---
 
@@ -23,7 +23,7 @@ This document provides comprehensive information for developers who want to cont
 
 ## Architecture Overview
 
-ZenClock is built with a modern React architecture using:
+For Clock is built with a modern React architecture using:
 
 - **React 19** with functional components and hooks
 - **TypeScript** for type safety
@@ -205,17 +205,17 @@ Renders particle effects using HTML5 Canvas.
 
 ### LocalStorage Keys
 
-ZenClock persists user preferences in LocalStorage:
+For Clock persists user preferences in LocalStorage:
 
 ```typescript
 // Layout configuration
-localStorage.setItem('zenclock_layout_config', JSON.stringify(layout));
+localStorage.setItem('For Clock_layout_config', JSON.stringify(layout));
 
 // AI configuration
-localStorage.setItem('zenclock_ai_config', JSON.stringify(aiConfig));
+localStorage.setItem('For Clock_ai_config', JSON.stringify(aiConfig));
 
 // Drag sensitivity
-localStorage.setItem('zenclock_drag_sensitivity', dragSensitivity.toString());
+localStorage.setItem('For Clock_drag_sensitivity', dragSensitivity.toString());
 ```
 
 ### State Updates
@@ -382,7 +382,7 @@ const applyGestureForce = (particle: Particle, handPosition: Vector2, gesture: G
 
 ### MediaPipe Integration
 
-ZenClock uses MediaPipe Tasks Vision for hand tracking.
+For Clock uses MediaPipe Tasks Vision for hand tracking.
 
 ### Setup
 
@@ -452,8 +452,8 @@ const checkYourGesture = (landmarks: Landmark[]): boolean => {
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.zenclock.app',
-  appName: 'ZenClock',
+  appId: 'com.For Clock.app',
+  appName: 'For Clock',
   webDir: 'dist',
   android: {
     allowMixedContent: true,
@@ -487,7 +487,7 @@ npm run sync:ios
 Add to `Info.plist`:
 ```xml
 <key>NSCameraUsageDescription</key>
-<string>ZenClock uses camera for gesture control</string>
+<string>For Clock uses camera for gesture control</string>
 ```
 
 ### Android Development

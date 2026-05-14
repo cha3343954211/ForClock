@@ -1,6 +1,6 @@
-# ZenClock iOS 开发指南
+﻿# For Clock iOS 开发指南
 
-本文档详细说明了如何在 macOS 环境下配置、构建和发布 **ZenClock** 的 iOS 版本。由于本项目是在 Windows 环境下初始化的，迁移到 Mac 进行编译时请务必阅读以下步骤。
+本文档详细说明了如何在 macOS 环境下配置、构建和发布 **For Clock** 的 iOS 版本。由于本项目是在 Windows 环境下初始化的，迁移到 Mac 进行编译时请务必阅读以下步骤。
 
 ---
 
@@ -54,7 +54,7 @@ npm run sync:ios
 文件位置: `ios/App/App/Info.plist`
 
 *   **📷 相机权限**:
-    *   `NSCameraUsageDescription`: 已添加描述 *"ZenClock uses camera for hand gesture recognition to control particle effects"*。
+    *   `NSCameraUsageDescription`: 已添加描述 *"For Clock uses camera for hand gesture recognition to control particle effects"*。
     *   **用途**: 用于 MediaPipe 手势识别功能。
 *   **🖥️ 全屏沉浸式**:
     *   `UIStatusBarHidden`: 设置为 `true`。
@@ -98,7 +98,7 @@ npm run open:ios
 4.  在 **Team** 下拉菜单中：
     *   **有开发者账号**: 选择你的 Team。
     *   **无开发者账号**: 选择 "Add an Account..." 登录你的 Apple ID（可以使用免费个人账号进行真机调试）。
-5.  **Bundle Identifier**: 默认为 `com.zenclock.app`。如果使用免费个人账号，可能需要修改此 ID 为唯一的字符串（例如 `com.yourname.zenclock`）以避免冲突。
+5.  **Bundle Identifier**: 默认为 `com.For Clock.app`。如果使用免费个人账号，可能需要修改此 ID 为唯一的字符串（例如 `com.yourname.For Clock`）以避免冲突。
 
 ### 4.3 运行应用
 1.  **连接设备**: 使用数据线将 iPhone/iPad 连接到 Mac（推荐真机以测试摄像头性能）。
@@ -141,4 +141,4 @@ npm run open:ios
 
 ---
 
-*ZenClock iOS 开发文档 - 生成于 2025-12-30*
+*For Clock iOS 开发文档 - 生成于 2025-12-30*

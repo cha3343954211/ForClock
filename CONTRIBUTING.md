@@ -1,6 +1,6 @@
-# Contributing to ZenClock
+﻿# Contributing to For Clock
 
-Thank you for your interest in contributing to ZenClock! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to For Clock! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ Thank you for your interest in contributing to ZenClock! This document provides 
 
 ### Our Pledge
 
-We pledge to make participation in ZenClock a harassment-free experience for everyone. We welcome contributors of all backgrounds and skill levels.
+We pledge to make participation in For Clock a harassment-free experience for everyone. We welcome contributors of all backgrounds and skill levels.
 
 ### Our Standards
 
@@ -434,6 +434,6 @@ Contributors are recognized in:
 
 ---
 
-**Thank you for contributing to ZenClock! 🙏**
+**Thank you for contributing to For Clock! 🙏**
 
 Your contributions help make this project better for everyone.

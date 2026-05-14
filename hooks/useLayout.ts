@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { LayoutConfig, ElementConfig } from '../types';
 
 const DEFAULT_LAYOUT: LayoutConfig = {
@@ -9,7 +9,7 @@ const DEFAULT_LAYOUT: LayoutConfig = {
 
 function loadLayout(): LayoutConfig {
   try {
-    const saved = localStorage.getItem('zenclock_layout_config');
+    const saved = localStorage.getItem('for_clock_layout_config');
     if (!saved) return DEFAULT_LAYOUT;
     const parsed: LayoutConfig = JSON.parse(saved);
     // 迁移：旧数据范围越界或缺少 opacity 字段时重置
@@ -18,7 +18,7 @@ function loadLayout(): LayoutConfig {
       parsed.digitalClock?.zIndex === undefined ||
       parsed.digitalClock?.opacity === undefined
     ) {
-      localStorage.removeItem('zenclock_layout_config');
+      localStorage.removeItem('for_clock_layout_config');
       return DEFAULT_LAYOUT;
     }
     return parsed;
@@ -29,7 +29,7 @@ function loadLayout(): LayoutConfig {
 
 function loadDragSensitivity(): number {
   try {
-    const saved = localStorage.getItem('zenclock_drag_sensitivity');
+    const saved = localStorage.getItem('for_clock_drag_sensitivity');
     return saved ? parseFloat(saved) : 1.0;
   } catch {
     return 1.0;
@@ -54,12 +54,12 @@ export function useLayout(): UseLayoutReturn {
 
   // 持久化布局
   useEffect(() => {
-    localStorage.setItem('zenclock_layout_config', JSON.stringify(layout));
+    localStorage.setItem('for_clock_layout_config', JSON.stringify(layout));
   }, [layout]);
 
   // 持久化灵敏度
   useEffect(() => {
-    localStorage.setItem('zenclock_drag_sensitivity', dragSensitivity.toString());
+    localStorage.setItem('for_clock_drag_sensitivity', dragSensitivity.toString());
   }, [dragSensitivity]);
 
   const updateElement = (id: string, patch: Partial<ElementConfig>) => {

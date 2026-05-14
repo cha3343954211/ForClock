@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ThemeId, ClockMode, ParticleMode, AIConfig } from '../types';
 
 export interface SettingsState {
@@ -53,7 +53,7 @@ const DEFAULT_AI_CONFIG: AIConfig = {
 
 function loadAIConfig(): AIConfig {
   try {
-    const saved = localStorage.getItem('zenclock_ai_config');
+    const saved = localStorage.getItem('for_clock_ai_config');
     return saved ? JSON.parse(saved) : DEFAULT_AI_CONFIG;
   } catch {
     return DEFAULT_AI_CONFIG;
@@ -78,7 +78,7 @@ export function useSettings(): UseSettingsReturn {
 
   // 持久化 AI 配置
   useEffect(() => {
-    localStorage.setItem('zenclock_ai_config', JSON.stringify(aiConfig));
+    localStorage.setItem('for_clock_ai_config', JSON.stringify(aiConfig));
   }, [aiConfig]);
 
   // 切换主题时清空 wisdom

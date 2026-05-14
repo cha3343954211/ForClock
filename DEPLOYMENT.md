@@ -1,6 +1,6 @@
-# ZenClock Deployment Guide
+﻿# For Clock Deployment Guide
 
-This guide covers various deployment options for ZenClock, from simple static hosting to production deployments.
+This guide covers various deployment options for For Clock, from simple static hosting to production deployments.
 
 ---
 

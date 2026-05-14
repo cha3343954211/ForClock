@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { TimerMode, TimerStatus } from '../types';
 
 // ---- 类型 ----
@@ -43,7 +43,7 @@ export interface UseTimersReturn {
 const DEFAULT_COUNTDOWN = 5 * 60 * 1000;
 const MAX_TIMERS = 6;
 const TIMER_COLORS = ['#60a5fa', '#34d399', '#f472b6', '#fb923c', '#a78bfa', '#facc15'];
-const STORAGE_KEY = 'zenclock_timers_v2';
+const STORAGE_KEY = 'for_clock_timers_v2';
 
 // ---- 工厂 ----
 

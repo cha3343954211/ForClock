@@ -1,10 +1,10 @@
-# ZenClock - Project Overview
+﻿# For Clock - Project Overview
 
 ## 📋 Quick Facts
 
 | Category | Details |
 |----------|---------|
-| **Project Name** | ZenClock (禅意时钟) |
+| **Project Name** | For Clock (禅意时钟) |
 | **Type** | Web Application / Mobile App |
 | **Category** | Productivity, Wellness, Screensaver |
 | **License** | MIT License |
@@ -13,7 +13,7 @@
 
 ## 🎯 Project Vision
 
-ZenClock is more than just a clock—it's a mindfulness tool that combines aesthetic design, AI-powered reflections, and interactive particle effects to create a calming digital environment. The project aims to help users find moments of zen in their busy digital lives.
+For Clock is more than just a clock—it's a mindfulness tool that combines aesthetic design, AI-powered reflections, and interactive particle effects to create a calming digital environment. The project aims to help users find moments of zen in their busy digital lives.
 
 ## ✨ Key Features
 
@@ -214,7 +214,7 @@ This project demonstrates:
 ## 🏆 Recognition & Credits
 
 ### Created By
-- Original concept and development by ZenClock Team
+- Original concept and development by For Clock Team
 
 ### Special Thanks
 - Google Gemini AI team

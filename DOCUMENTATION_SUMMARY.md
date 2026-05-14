@@ -1,8 +1,8 @@
-# 📦 ZenClock Documentation Package
+﻿# 📦 For Clock Documentation Package
 
 ## Overview
 
-This document provides a complete summary of all documentation created for the ZenClock project, ready for GitHub publication.
+This document provides a complete summary of all documentation created for the For Clock project, ready for GitHub publication.
 
 ---
 

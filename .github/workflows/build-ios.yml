@@ -1,4 +1,4 @@
-name: Build iOS IPA (Unsigned)
+﻿name: Build iOS IPA (Unsigned)
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath $RUNNER_TEMP/ZenClock.xcarchive \
+            -archivePath $RUNNER_TEMP/For Clock.xcarchive \
             -skipPackagePluginValidation \
             -skipMacroValidation \
             CODE_SIGN_IDENTITY="" \
@@ -52,19 +52,19 @@ jobs:
       # 7. 手动打包为 IPA（无需签名导出）
       - name: Package IPA from archive
         run: |
-          APP_PATH=$(find $RUNNER_TEMP/ZenClock.xcarchive/Products -name "*.app" | head -1)
+          APP_PATH=$(find $RUNNER_TEMP/For Clock.xcarchive/Products -name "*.app" | head -1)
           mkdir -p $RUNNER_TEMP/Payload
           cp -r "$APP_PATH" $RUNNER_TEMP/Payload/
           cd $RUNNER_TEMP
-          zip -r ZenClock-unsigned.ipa Payload/
-          echo "IPA created at: $RUNNER_TEMP/ZenClock-unsigned.ipa"
+          zip -r For Clock-unsigned.ipa Payload/
+          echo "IPA created at: $RUNNER_TEMP/For Clock-unsigned.ipa"
 
       # 8. 上传 IPA 为 Artifact（保留 14 天）
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZenClock-iOS-unsigned
-          path: ${{ runner.temp }}/ZenClock-unsigned.ipa
+          name: For Clock-iOS-unsigned
+          path: ${{ runner.temp }}/For Clock-unsigned.ipa
           retention-days: 14
 
       # 9. 显示构建信息
@@ -73,7 +73,7 @@ jobs:
           echo "## ✅ Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**下载 IPA 后，使用 Sideloadly 安装到设备：**" >> $GITHUB_STEP_SUMMARY
-          echo "1. 下载上方 Artifact: \`ZenClock-iOS-unsigned.ipa\`" >> $GITHUB_STEP_SUMMARY
+          echo "1. 下载上方 Artifact: \`For Clock-iOS-unsigned.ipa\`" >> $GITHUB_STEP_SUMMARY
           echo "2. 打开 [Sideloadly](https://sideloadly.io) (Windows/Mac 均可)" >> $GITHUB_STEP_SUMMARY
           echo "3. 连接 iPhone/iPad，拖入 IPA，用免费 Apple ID 签名" >> $GITHUB_STEP_SUMMARY
           echo "4. 安装完成后在 设置→通用→VPN与设备管理 信任证书" >> $GITHUB_STEP_SUMMARY

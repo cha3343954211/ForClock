@@ -1,8 +1,8 @@
-<div align="center">
+﻿<div align="center">
 
-<img width="1200" height="475" alt="ZenClock Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="For Clock Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 
-# 🕐 ZenClock - 禅意时钟屏保
+# 🕐 For Clock - 禅意时钟屏保
 
 **一款融合美学、人工智能与互动体验的现代化时钟屏保应用**
 
@@ -105,7 +105,7 @@ Integrated with **Google Gemini AI** to generate poetic reflections or philosoph
    在 Android 设备上启用"未知来源安装"，然后安装 APK
 
 3. **开始使用**  
-   打开 ZenClock，享受禅意时光！  
+   打开 For Clock，享受禅意时光！  
    👉 授予相机权限（可选）以体验手势控制功能
 
 **系统要求**：Android 8.0 或更高版本
@@ -177,7 +177,7 @@ npm run dev
 
 ### ✋ Gesture Control (Camera Required)
 
-ZenClock uses **MediaPipe** technology to recognize hand gestures. Different particle modes have unique interactions:
+For Clock uses **MediaPipe** technology to recognize hand gestures. Different particle modes have unique interactions:
 
 **General Rule**: Hold your palm facing the camera, centered in the frame.
 
@@ -284,7 +284,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ### Custom AI Provider
 
-ZenClock supports custom AI providers (OpenAI-compatible APIs):
+For Clock supports custom AI providers (OpenAI-compatible APIs):
 
 1. Open Settings in the app
 2. Select "Custom AI Provider"
@@ -303,7 +303,7 @@ ZenClock supports custom AI providers (OpenAI-compatible APIs):
 
 ### ⭐ Recommended: Use Pre-built Apps
 
-**The easiest way to experience ZenClock - no development setup needed!**
+**The easiest way to experience For Clock - no development setup needed!**
 
 #### Android
 - **Download**: Get the latest APK from [Releases](https://github.com/yourusername/zen-clock/releases)
@@ -476,7 +476,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, suggestions, or issues, please open an issue on GitHub or contact the maintainers.
 
-**Enjoy your Zen moments with ZenClock! 🧘‍♂️⏰**
+**Enjoy your Zen moments with For Clock! 🧘‍♂️⏰**
 
 ---
 
@@ -497,7 +497,7 @@ For questions, suggestions, or issues, please open an issue on GitHub or contact
    在 Android 设备上启用"未知来源安装"，然后安装 APK
 
 3. **开始使用**  
-   打开 ZenClock，享受禅意时光！  
+   打开 For Clock，享受禅意时光！  
    👉 授予相机权限（可选）以体验手势控制功能
 
 **系统要求**：Android 8.0 或更高版本
@@ -643,13 +643,13 @@ We welcome contributions from the community! Please read our [Contributing Guide
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/zen-clock/discussions)
 - **Email**: your-email@example.com
 
-**If you enjoy ZenClock, please consider giving it a ⭐ star on GitHub!**
+**If you enjoy For Clock, please consider giving it a ⭐ star on GitHub!**
 
 ---
 
 <div align="center">
 
-**Made with ❤️ and ☕ by the ZenClock Team**
+**Made with ❤️ and ☕ by the For Clock Team**
 
 **Enjoy your Zen moments! 🧘‍♂️⏰**
 

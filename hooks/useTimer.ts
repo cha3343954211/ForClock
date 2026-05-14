@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+﻿import { useState, useRef, useCallback, useEffect } from 'react';
 import { TimerMode, TimerStatus } from '../types';
 
 // ---- 位置持久化 ----
@@ -6,7 +6,7 @@ interface TimerPosition { x: number; y: number; }
 
 function loadPosition(): TimerPosition {
   try {
-    const s = localStorage.getItem('zenclock_timer_pos');
+    const s = localStorage.getItem('for_clock_timer_pos');
     return s ? JSON.parse(s) : { x: 30, y: 30 };
   } catch { return { x: 30, y: 30 }; }
 }
@@ -154,7 +154,7 @@ export function useTimer(): UseTimerReturn {
 
   const setPosition = useCallback((pos: TimerPosition) => {
     setPosition_internal(pos);
-    localStorage.setItem('zenclock_timer_pos', JSON.stringify(pos));
+    localStorage.setItem('for_clock_timer_pos', JSON.stringify(pos));
   }, []);
 
   // 初始化 displayMs（倒计时默认显示目标时长）
