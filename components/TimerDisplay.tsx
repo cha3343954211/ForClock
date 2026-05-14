@@ -3,21 +3,31 @@ import { Play, Pause, RotateCcw, Timer, AlarmClock, X } from 'lucide-react';
 import { TimerMode } from '../types';
 import { TimerRecord, VisualPatch, calcDisplayMs, formatMs, playAlertTone } from '../hooks/useTimers';
 
+/** customColor 为 null 时，用 rgba(255,255,255,0.X) 降级白色 */
+const tint = (color: string | null, alpha = 1) =>
+  color ? color + (alpha < 1 ? Math.round(alpha * 255).toString(16).padStart(2, '0') : '') : undefined;
+
 // ---- 倒计时输入 ----
-const CountdownInput: React.FC<{ targetMs: number; onChange: (ms: number) => void }> = ({ targetMs, onChange }) => {
+const CountdownInput: React.FC<{
+  targetMs: number;
+  onChange: (ms: number) => void;
+  accentColor: string | null;
+}> = ({ targetMs, onChange, accentColor }) => {
   const total = Math.floor(targetMs / 1000);
   const mins = Math.floor(total / 60);
   const secs = total % 60;
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+  const borderStyle = accentColor ? { borderColor: accentColor + '60' } : {};
+  const inputCls = 'w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none py-1';
   return (
     <div className="flex items-center justify-center gap-1">
       <input type="number" min={0} max={99} value={mins}
         onChange={e => onChange((clamp(parseInt(e.target.value) || 0, 0, 99) * 60 + secs) * 1000)}
-        className="w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none focus:border-white/50 py-1" />
-      <span className="text-white/50 text-xl font-mono">:</span>
+        className={inputCls} style={{ color: accentColor || undefined, ...borderStyle }} />
+      <span className="text-white/50 text-xl font-mono" style={{ color: accentColor || undefined }}>:</span>
       <input type="number" min={0} max={59} value={String(secs).padStart(2, '0')}
         onChange={e => onChange((mins * 60 + clamp(parseInt(e.target.value) || 0, 0, 59)) * 1000)}
-        className="w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none focus:border-white/50 py-1" />
+        className={inputCls} style={{ color: accentColor || undefined, ...borderStyle }} />
       <span className="text-white/30 text-xs ml-1">分:秒</span>
     </div>
   );
@@ -73,9 +83,6 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
 
   const displayMs = calcDisplayMs(timer);
 
-  // 快捷颜色选择器
-  const colorInputRef = useRef<HTMLInputElement>(null);
-
   // 时间显示颜色
   const timeColorStyle: React.CSSProperties = isFinished
     ? {}
@@ -98,7 +105,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
       {/* ── 倒计时目标输入（仅 idle 时，浮于时间上方）── */}
       {!isStopwatch && status === 'idle' && (
         <div className="mb-2">
-          <CountdownInput targetMs={countdownTarget} onChange={ms => actions.setCountdownTarget(ms)} />
+          <CountdownInput targetMs={countdownTarget} onChange={ms => actions.setCountdownTarget(ms)} accentColor={customColor} />
         </div>
       )}
 
@@ -128,15 +135,15 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
         </div>
       )}
 
-      {/* ── 工具栏：模式 + 控制 + 颜色 + 关闭（小号透明行）── */}
+      {/* ── 工具栏（小号透明行，悬停显现）── */}
       <div className="flex items-center gap-0.5 mt-2 opacity-40 hover:opacity-90 transition-opacity duration-200">
 
-        {/* 模式切换 */}
+        {/* 模式切换 —— 激活态用 customColor 着色 */}
         <button
           onClick={() => canSwitchMode && actions.setMode('stopwatch')}
           className={`flex items-center gap-0.5 px-1.5 py-1 rounded text-[10px] font-medium transition-all
-            ${isStopwatch ? 'text-white' : 'text-white/50 hover:text-white/80'}
             ${!canSwitchMode ? 'cursor-not-allowed' : ''}`}
+          style={{ color: isStopwatch ? (tint(customColor) ?? 'white') : 'rgba(255,255,255,0.45)' }}
           title="正计时"
         >
           <Timer size={9} />秒
@@ -145,8 +152,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
         <button
           onClick={() => canSwitchMode && actions.setMode('countdown')}
           className={`flex items-center gap-0.5 px-1.5 py-1 rounded text-[10px] font-medium transition-all
-            ${!isStopwatch ? 'text-white' : 'text-white/50 hover:text-white/80'}
             ${!canSwitchMode ? 'cursor-not-allowed' : ''}`}
+          style={{ color: !isStopwatch ? (tint(customColor) ?? 'white') : 'rgba(255,255,255,0.45)' }}
           title="倒计时"
         >
           <AlarmClock size={9} />倒
@@ -161,28 +168,18 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
           <RotateCcw size={11} />
         </button>
 
-        {/* 开始 / 暂停 */}
+        {/* 开始 / 暂停 —— 激活态用 customColor */}
         <button
           onClick={isRunning ? actions.pause : actions.start}
           disabled={isFinished}
-          className={`p-1 transition-colors rounded ${isFinished ? 'text-red-300/50 cursor-not-allowed' : 'text-white/60 hover:text-white'}`}
+          className={`p-1 transition-colors rounded ${isFinished ? 'cursor-not-allowed opacity-40' : ''}`}
+          style={{ color: isRunning ? (tint(customColor) ?? 'white') : 'rgba(255,255,255,0.6)' }}
           title={isRunning ? '暂停' : '开始'}
         >
           {isRunning ? <Pause size={11} /> : <Play size={11} />}
         </button>
 
         <span className="w-px h-3 bg-white/20 mx-0.5" />
-
-        {/* 颜色 */}
-        <button
-          onClick={() => colorInputRef.current?.click()}
-          className="w-3 h-3 rounded-full border border-white/30 hover:scale-125 transition-transform mx-1"
-          style={{ background: customColor ?? 'rgba(255,255,255,0.4)' }}
-          title="更改颜色"
-        />
-        <input ref={colorInputRef} type="color" value={customColor ?? '#ffffff'}
-          onChange={e => actions.updateVisual({ customColor: e.target.value })}
-          className="sr-only" />
 
         {/* 关闭 */}
         <button onClick={actions.remove}
@@ -191,6 +188,9 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
           <X size={10} />
         </button>
       </div>
+
+      {/* ── 双击提示（极弱，仅占位）── */}
+      <span className="text-[9px] text-white/15 mt-1">双击自定义颜色 / 大小</span>
 
     </div>
   );
