@@ -1,5 +1,5 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { THEMES } from './constants';
+import { THEMES, FOREST_BG_FALLBACK } from './constants';
 import { ClockMode, ParticleMode } from './types';
 import { DigitalClock } from './components/DigitalClock';
 import { TimerDisplay } from './components/TimerDisplay';
@@ -31,6 +31,9 @@ const App: React.FC = () => {
   const layoutCtx = useLayout();
   const timers = useTimers();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Misty Forest 背景加载失败时降级为本地 SVG
+  const [forestBgError, setForestBgError] = useState(false);
 
   const [wisdom, setWisdom] = useState('');
   const [isGeneratingWisdom, setIsGeneratingWisdom] = useState(false);
@@ -121,12 +124,28 @@ const App: React.FC = () => {
         className={`relative w-full h-screen overflow-hidden transition-colors duration-700 ease-in-out flex flex-col items-center justify-center ${currentTheme.bgClass}`}
       >
         {/* 背景图层 */}
-        {(settings.customBackground || currentTheme.backgroundImage) && (
-          <div
-            className={`absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ${settings.customBackground ? 'opacity-100' : 'opacity-40 mix-blend-overlay'}`}
-            style={{ backgroundImage: `url(${settings.customBackground || currentTheme.backgroundImage})` }}
-          />
-        )}
+        {(settings.customBackground || currentTheme.backgroundImage) && (() => {
+          const bgUrl = settings.customBackground
+            || (forestBgError ? FOREST_BG_FALLBACK : currentTheme.backgroundImage);
+          return (
+            <>
+              <div
+                className={`absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ${settings.customBackground ? 'opacity-100' : 'opacity-40 mix-blend-overlay'}`}
+                style={{ backgroundImage: `url(${bgUrl})` }}
+              />
+              {/* 隐藏 img 用于检测 picsum 是否可达，失败则切 SVG */}
+              {!settings.customBackground && currentTheme.backgroundImage && (
+                <img
+                  src={currentTheme.backgroundImage}
+                  className="hidden"
+                  onError={() => setForestBgError(true)}
+                  onLoad={() => setForestBgError(false)}
+                  alt=""
+                />
+              )}
+            </>
+          );
+        })()}
         {settings.customBackground && <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none" />}
 
         {/* 粒子系统 - 按需加载 */}
