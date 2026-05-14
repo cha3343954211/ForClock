@@ -102,32 +102,37 @@ export const generateTimeReflection = async (
   }
 
   // 2. Handle Google Gemini - 按需动态加载 SDK
-  let aiClient = defaultGenAI;
+  let aiClient: GoogleGenAIType | null = null;
   let modelName = 'gemini-3-flash-preview';
 
-  // If user provided custom Gemini config, override
   if (config && config.provider === 'gemini') {
     if (config.apiKey) {
       try {
         const GenAI = await loadGenAI();
+        // 每次用最新 key 实例化，避免旧 client 残留
         aiClient = new GenAI({ apiKey: config.apiKey });
+        defaultGenAI = aiClient;
       } catch (e) {
-        console.error("Invalid Custom Gemini Key", e);
-        return "Invalid API Key.\n无效的API密钥。";
+        console.error('Invalid Custom Gemini Key', e);
+        return getLocalWisdom(hour, themeLabel);
       }
-    } else if (process.env.API_KEY && !aiClient) {
-      // 默认从环境变量初始化（懒加载）
-      try {
-        const GenAI = await loadGenAI();
-        defaultGenAI = new GenAI({ apiKey: process.env.API_KEY });
-        aiClient = defaultGenAI;
-      } catch (error) {
-        console.error("Failed to initialize GoogleGenAI", error);
+    } else if (process.env.API_KEY) {
+      // 环境变量 key（懒加载，复用实例）
+      if (!defaultGenAI) {
+        try {
+          const GenAI = await loadGenAI();
+          defaultGenAI = new GenAI({ apiKey: process.env.API_KEY });
+        } catch (error) {
+          console.error('Failed to initialize GoogleGenAI', error);
+        }
       }
+      aiClient = defaultGenAI;
     }
-    if (config.model) {
-      modelName = config.model;
-    }
+    // 无任何 key：aiClient 保持 null → 下方 fallback
+    if (config.model) modelName = config.model;
+  } else if (!config) {
+    // 未传 config：尝试用环境变量
+    aiClient = defaultGenAI;
   }
 
   if (!aiClient) {
@@ -140,9 +145,9 @@ export const generateTimeReflection = async (
       contents: prompt,
     });
 
-    return response.text?.trim() || "Moments fade, memories remain.\n瞬间消逝，记忆永存。";
+    return response.text?.trim() || getLocalWisdom(hour, themeLabel);
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "The present moment is all we have.\n活在当下。";
+    console.error('Gemini API Error:', error);
+    return getLocalWisdom(hour, themeLabel);
   }
 };
