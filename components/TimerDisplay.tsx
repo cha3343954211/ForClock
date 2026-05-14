@@ -1,177 +1,177 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Play, Pause, RotateCcw, Timer, AlarmClock } from 'lucide-react';
-import { TimerMode } from '../types';
-import { UseTimerReturn, formatMs } from '../hooks/useTimer';
+import React from 'react';
+import { Play, Pause, RotateCcw } from 'lucide-react';
+import { ThemeConfig } from '../types';
+import { UseTimerReturn } from '../hooks/useTimer';
 
 interface TimerDisplayProps {
   timer: UseTimerReturn;
-  /** 主题文字颜色类 */
-  textClass: string;
+  theme: ThemeConfig;
+  customColor?: string | null;
+  customFont?: string | null;
 }
 
-// ---- 倒计时输入行 ----
-const CountdownInput: React.FC<{
-  targetMs: number;
-  onChange: (ms: number) => void;
-}> = ({ targetMs, onChange }) => {
-  const totalSec = Math.floor(targetMs / 1000);
-  const mins = Math.floor(totalSec / 60);
-  const secs = totalSec % 60;
+// 单个数字块——与 DigitalClock FlipDigit 非翻页模式保持一致
+const Digit: React.FC<{
+  value: string;
+  color: string;
+  font: string;
+  size: string;
+  dim?: boolean;
+}> = ({ value, color, font, size, dim }) => (
+  <span
+    className={`font-bold leading-none transition-colors duration-300 ${dim ? 'opacity-30' : 'opacity-100'}`}
+    style={{ fontSize: size, color, fontFamily: font, letterSpacing: '-0.02em' }}
+  >
+    {value}
+  </span>
+);
 
-  const clamp = (val: number, min: number, max: number) =>
-    Math.max(min, Math.min(max, val));
+// 分隔符
+const Sep: React.FC<{ color: string; size: string; pulse?: boolean }> = ({ color, size, pulse }) => (
+  <span
+    className={`font-bold leading-none pb-[0.1em] ${pulse ? 'animate-pulse' : ''}`}
+    style={{ fontSize: `calc(${size} * 0.55)`, color, opacity: 0.6 }}
+  >
+    :
+  </span>
+);
 
-  return (
-    <div className="flex items-center justify-center gap-1 mb-2">
-      <input
-        type="number"
-        min={0}
-        max={99}
-        value={mins}
-        onChange={e => {
-          const m = clamp(parseInt(e.target.value) || 0, 0, 99);
-          onChange((m * 60 + secs) * 1000);
-        }}
-        className="w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none focus:border-white/50 py-1"
-      />
-      <span className="text-white/60 text-xl font-mono">:</span>
-      <input
-        type="number"
-        min={0}
-        max={59}
-        value={String(secs).padStart(2, '0')}
-        onChange={e => {
-          const s = clamp(parseInt(e.target.value) || 0, 0, 59);
-          onChange((mins * 60 + s) * 1000);
-        }}
-        className="w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none focus:border-white/50 py-1"
-      />
-      <span className="text-white/40 text-xs ml-1">分 : 秒</span>
-    </div>
-  );
-};
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, theme, customColor, customFont }) => {
+  const { mode, status, displayMs, countdownTarget, setMode, setCountdownTarget, start, pause, reset } = timer;
 
-// ---- 主组件 ----
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, textClass }) => {
-  const {
-    mode, status, displayMs, countdownTarget,
-    setMode, setCountdownTarget, start, pause, reset,
-  } = timer;
-
-  // 本地拖拽状态（由父层 DraggableElement 管理，这里只关注 UI）
   const isStopwatch = mode === 'stopwatch';
-  const isFinished = status === 'finished';
-  const isRunning = status === 'running';
+  const isRunning   = status === 'running';
+  const isFinished  = status === 'finished';
+  const isIdle      = status === 'idle';
 
-  // 颜色逻辑
-  const getDisplayColor = (): string => {
-    if (isFinished) return 'text-red-400 animate-pulse';
-    if (!isStopwatch && displayMs <= 10_000) return 'text-amber-400';
-    if (!isStopwatch && displayMs <= 60_000) return 'text-yellow-300';
-    return textClass || 'text-white';
-  };
+  // 颜色
+  const isLightTheme = theme.bgClass.includes('stone-100') || theme.bgClass.includes('white');
+  const baseColor = customColor ?? (isLightTheme ? '#333333' : '#eeeeee');
+  const accentColor = isFinished
+    ? '#f87171'
+    : !isStopwatch && displayMs <= 10_000
+      ? '#fb923c'
+      : !isStopwatch && displayMs <= 60_000
+        ? '#fbbf24'
+        : baseColor;
 
-  // 是否显示百分秒（正计时 + 暂停或空闲时不动时显示）
-  const showCs = isStopwatch;
+  const fontFamily = customFont ?? (theme.fontFamily.includes('mono') ? 'monospace' : 'inherit');
 
-  const handleModeSwitch = (m: TimerMode) => {
-    if (status !== 'running') setMode(m);
-  };
+  // 尺寸——与 DigitalClock compact 档位一致
+  const mainSize = 'min(10vw, 120px)';
+  const csSize   = 'min(5vw, 58px)';    // 百分秒（正计时专用）
+
+  // 格式化
+  const totalSec = Math.floor(Math.max(0, displayMs) / 1000);
+  const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+  const ss = String(totalSec % 60).padStart(2, '0');
+  const cs = String(Math.floor((Math.max(0, displayMs) % 1000) / 10)).padStart(2, '0');
+
+  // 倒计时目标编辑（idle 时）
+  const targetSec = Math.floor(countdownTarget / 1000);
+  const targetMins = Math.floor(targetSec / 60);
+  const targetSecs = targetSec % 60;
+
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
   return (
-    <div
-      className="relative select-none"
-      style={{ minWidth: 220, userSelect: 'none' }}
-    >
-      {/* 面板背景 */}
-      <div className="bg-black/70 backdrop-blur-xl border border-white/15 rounded-2xl px-5 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center select-none" style={{ userSelect: 'none' }}>
 
-        {/* 模式切换标签 */}
-        <div className="flex bg-white/5 rounded-xl p-1 gap-1 w-full">
-          <button
-            onClick={() => handleModeSwitch('stopwatch')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all ${
-              isStopwatch ? 'bg-white/20 text-white' : 'text-white/40 hover:text-white/70'
-            }`}
-          >
-            <Timer size={12} />
-            正计时
-          </button>
-          <button
-            onClick={() => handleModeSwitch('countdown')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all ${
-              !isStopwatch ? 'bg-white/20 text-white' : 'text-white/40 hover:text-white/70'
-            }`}
-          >
-            <AlarmClock size={12} />
-            倒计时
-          </button>
-        </div>
-
-        {/* 倒计时目标设置（仅在 idle 时显示） */}
-        {!isStopwatch && status === 'idle' && (
-          <CountdownInput targetMs={countdownTarget} onChange={setCountdownTarget} />
-        )}
-
-        {/* 主时间显示 */}
-        <div
-          className={`font-mono font-bold tracking-tight transition-colors duration-300 ${getDisplayColor()}`}
-          style={{ fontSize: 'clamp(2.2rem, 7vw, 4rem)', letterSpacing: '-0.02em', lineHeight: 1 }}
+      {/* ── 主时间显示（与 DigitalClock 同款透明大字） ── */}
+      {isFinished ? (
+        <span
+          className="font-bold animate-pulse"
+          style={{ fontSize: mainSize, color: '#f87171', fontFamily, letterSpacing: '-0.02em' }}
         >
-          {isFinished ? '完成!' : formatMs(displayMs, showCs)}
+          完 成
+        </span>
+      ) : (
+        <div className="flex items-end gap-[0.15em]">
+          {/* MM */}
+          <Digit value={mm[0]} color={accentColor} font={fontFamily} size={mainSize} />
+          <Digit value={mm[1]} color={accentColor} font={fontFamily} size={mainSize} />
+          <Sep color={accentColor} size={mainSize} pulse={isRunning} />
+          {/* SS */}
+          <Digit value={ss[0]} color={accentColor} font={fontFamily} size={mainSize} />
+          <Digit value={ss[1]} color={accentColor} font={fontFamily} size={mainSize} />
+          {/* .cs — 正计时专用 */}
+          {isStopwatch && (
+            <>
+              <span className="font-bold pb-[0.05em]"
+                style={{ fontSize: `calc(${mainSize} * 0.4)`, color: accentColor, opacity: 0.5, fontFamily }}>.</span>
+              <Digit value={cs[0]} color={accentColor} font={fontFamily} size={csSize} dim />
+              <Digit value={cs[1]} color={accentColor} font={fontFamily} size={csSize} dim />
+            </>
+          )}
         </div>
+      )}
 
-        {/* 进度条（仅倒计时） */}
-        {!isStopwatch && !isFinished && countdownTarget > 0 && (
-          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-100"
-              style={{ width: `${Math.max(0, (displayMs / countdownTarget) * 100)}%` }}
-            />
-          </div>
-        )}
-
-        {/* 控制按钮 */}
-        <div className="flex items-center gap-3 w-full justify-center">
-          {/* 重置 */}
-          <button
-            onClick={reset}
-            className="p-2 rounded-xl text-white/40 hover:text-white hover:bg-white/10 transition-all"
-            title="重置"
-          >
-            <RotateCcw size={16} />
-          </button>
-
-          {/* 开始 / 暂停 */}
-          <button
-            onClick={isRunning ? pause : start}
-            disabled={isFinished && isStopwatch}
-            className={`flex items-center gap-2 px-5 py-2 rounded-xl font-medium text-sm transition-all ${
-              isFinished
-                ? 'bg-red-500/20 text-red-300 cursor-default'
-                : isRunning
-                  ? 'bg-white/10 text-white hover:bg-white/20'
-                  : 'bg-white/20 text-white hover:bg-white/30 shadow-md'
-            }`}
-          >
-            {isRunning
-              ? <><Pause size={16} /> 暂停</>
-              : isFinished
-                ? <span className="text-xs">按重置继续</span>
-                : <><Play size={16} /> 开始</>
-            }
-          </button>
+      {/* ── 进度条（倒计时专用，细线条在时间正下方） ── */}
+      {!isStopwatch && !isFinished && countdownTarget > 0 && (
+        <div className="mt-2 rounded-full overflow-hidden" style={{ width: mainSize, height: 3, background: 'rgba(255,255,255,0.12)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-100"
+            style={{
+              width: `${Math.max(0, (displayMs / countdownTarget) * 100)}%`,
+              background: displayMs <= 10_000 ? '#fb923c' : 'rgba(255,255,255,0.55)',
+            }}
+          />
         </div>
+      )}
 
-        {/* 倒计时完成后的重新开始提示 */}
-        {isFinished && !isStopwatch && (
-          <button
-            onClick={reset}
-            className="text-xs text-red-300/70 hover:text-red-200 transition-colors animate-pulse"
-          >
-            点击重置以重新设置
-          </button>
-        )}
+      {/* ── 倒计时目标编辑（idle 时显示小输入框） ── */}
+      {!isStopwatch && isIdle && (
+        <div className="flex items-center gap-1 mt-2 opacity-70">
+          <input
+            type="number" min={0} max={99} value={targetMins}
+            onChange={e => setCountdownTarget((clamp(+e.target.value || 0, 0, 99) * 60 + targetSecs) * 1000)}
+            className="w-10 text-center bg-white/10 border border-white/20 rounded text-sm font-mono focus:outline-none focus:border-white/50 py-0.5"
+            style={{ color: baseColor }}
+          />
+          <span style={{ color: baseColor, opacity: 0.5 }} className="font-mono text-sm">:</span>
+          <input
+            type="number" min={0} max={59} value={String(targetSecs).padStart(2, '0')}
+            onChange={e => setCountdownTarget((targetMins * 60 + clamp(+e.target.value || 0, 0, 59)) * 1000)}
+            className="w-10 text-center bg-white/10 border border-white/20 rounded text-sm font-mono focus:outline-none focus:border-white/50 py-0.5"
+            style={{ color: baseColor }}
+          />
+          <span style={{ color: baseColor, opacity: 0.35 }} className="text-xs ml-1">m : s</span>
+        </div>
+      )}
+
+      {/* ── 控制栏（hover 时显现） ── */}
+      <div className="flex items-center gap-4 mt-3 opacity-40 hover:opacity-90 transition-opacity duration-300">
+
+        {/* 模式切换 */}
+        <button
+          onClick={() => { if (!isRunning) setMode(isStopwatch ? 'countdown' : 'stopwatch'); }}
+          className="text-[10px] font-mono uppercase tracking-widest transition-colors hover:opacity-100"
+          style={{ color: baseColor, opacity: isRunning ? 0.3 : 0.7 }}
+          title={isStopwatch ? '切换为倒计时' : '切换为正计时'}
+        >
+          {isStopwatch ? '正计时' : '倒计时'}
+        </button>
+
+        {/* 重置 */}
+        <button
+          onClick={reset}
+          className="transition-opacity hover:opacity-100"
+          style={{ color: baseColor }}
+          title="重置"
+        >
+          <RotateCcw size={14} />
+        </button>
+
+        {/* 开始 / 暂停 */}
+        <button
+          onClick={isRunning ? pause : start}
+          className="transition-opacity hover:opacity-100"
+          style={{ color: isFinished ? '#f87171' : baseColor }}
+          title={isRunning ? '暂停' : isFinished ? '重置后继续' : '开始'}
+          disabled={isFinished}
+        >
+          {isRunning ? <Pause size={16} /> : <Play size={16} />}
+        </button>
       </div>
     </div>
   );

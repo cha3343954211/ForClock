@@ -194,7 +194,12 @@ const App: React.FC = () => {
             containerRef={containerRef}
             dragSensitivity={layoutCtx.dragSensitivity}
           >
-            <TimerDisplay timer={timer} textClass={currentTheme.textClass} />
+            <TimerDisplay
+              timer={timer}
+              theme={currentTheme}
+              customColor={settings.customColor}
+              customFont={settings.customFont}
+            />
           </DraggableElement>
         )}
 
