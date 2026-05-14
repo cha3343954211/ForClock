@@ -39,6 +39,12 @@ export interface TimeState {
   fullDate: string;
 }
 
+/** 计时器模式 */
+export type TimerMode = 'stopwatch' | 'countdown';
+
+/** 计时器状态 */
+export type TimerStatus = 'idle' | 'running' | 'paused' | 'finished';
+
 export type AIProvider = 'gemini' | 'modelscope' | 'custom';
 
 export interface AIConfig {

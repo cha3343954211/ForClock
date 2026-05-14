@@ -24,7 +24,8 @@ import {
   Cpu,
   ChevronDown,
   ChevronUp,
-  Quote
+  Quote,
+  AlarmClock
 } from 'lucide-react';
 import { ClockMode, ParticleMode, AIConfig, AIProvider } from '../types';
 import { THEMES, COLOR_PRESETS } from '../constants';
@@ -37,7 +38,7 @@ interface ControlsProps {
 }
 
 export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBackground }) => {
-  const { settings, layoutCtx, isGeneratingWisdom, controlsVisible, setControlsVisible } = useSettingsContext();
+  const { settings, layoutCtx, timer, isGeneratingWisdom, controlsVisible, setControlsVisible } = useSettingsContext();
   const { layout, dragSensitivity, setDragSensitivity, resetLayout, setLayerOrder } = layoutCtx;
 
   const {
@@ -204,6 +205,15 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
               title={showWisdom ? "Hide Daily Quote" : "Show Daily Quote"}
             >
               <Quote size={18} />
+            </button>
+
+            {/* 计时器开关 */}
+            <button
+              onClick={() => timer.setVisible(!timer.visible)}
+              className={`p-2 transition-all rounded-lg ${timer.visible ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
+              title={timer.visible ? "隐藏计时器" : "显示计时器"}
+            >
+              <AlarmClock size={18} />
             </button>
 
             <button

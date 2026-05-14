@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { UseSettingsReturn } from '../hooks/useSettings';
 import { UseLayoutReturn } from '../hooks/useLayout';
+import { UseTimerReturn } from '../hooks/useTimer';
 
 /**
  * SettingsContext - 全局设置状态
@@ -12,6 +13,7 @@ import { UseLayoutReturn } from '../hooks/useLayout';
 interface SettingsContextValue {
   settings: UseSettingsReturn;
   layoutCtx: UseLayoutReturn;
+  timer: UseTimerReturn;
   /** AI Wisdom 相关 */
   wisdom: string;
   setWisdom: (text: string) => void;

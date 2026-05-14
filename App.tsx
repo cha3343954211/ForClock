@@ -2,6 +2,7 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { THEMES } from './constants';
 import { ClockMode, ParticleMode } from './types';
 import { DigitalClock } from './components/DigitalClock';
+import { TimerDisplay } from './components/TimerDisplay';
 import { Controls } from './components/Controls';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DraggableElement } from './components/DraggableElement';
@@ -10,6 +11,7 @@ import { DateLine } from './components/DateLine';
 import { generateTimeReflection } from './services/geminiService';
 import { useSettings } from './hooks/useSettings';
 import { useLayout } from './hooks/useLayout';
+import { useTimer } from './hooks/useTimer';
 import { SettingsProvider } from './contexts/SettingsContext';
 
 // 代码分割：仅在需要时加载
@@ -26,6 +28,7 @@ const ELEMENT_LABELS: Record<string, string> = {
 const App: React.FC = () => {
   const settings = useSettings();
   const layoutCtx = useLayout();
+  const timer = useTimer();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [wisdom, setWisdom] = useState('');
@@ -95,7 +98,7 @@ const App: React.FC = () => {
   const activeElementConfig = activeSettingsId ? layout[activeSettingsId as keyof typeof layout] : null;
 
   return (
-    <SettingsProvider value={{ settings, layoutCtx, wisdom, setWisdom, isGeneratingWisdom, setIsGeneratingWisdom, controlsVisible, setControlsVisible }}>
+    <SettingsProvider value={{ settings, layoutCtx, timer, wisdom, setWisdom, isGeneratingWisdom, setIsGeneratingWisdom, controlsVisible, setControlsVisible }}>
       <div
         ref={containerRef}
         className={`relative w-full h-screen overflow-hidden transition-colors duration-700 ease-in-out flex flex-col items-center justify-center ${currentTheme.bgClass}`}
@@ -161,6 +164,38 @@ const App: React.FC = () => {
             onClose={() => setActiveSettingsId(null)}
             onReset={() => updateElement(activeSettingsId, { x: 0, y: 0, scale: 1, rotation: 0, visible: true, opacity: 1, customColor: null })}
           />
+        )}
+
+        {/* 计时器 - 可拖拽面板 */}
+        {timer.visible && (
+          <DraggableElement
+            key="timer"
+            id="timer"
+            config={{
+              id: 'timer',
+              x: timer.position.x,
+              y: timer.position.y,
+              scale: 1,
+              rotation: 0,
+              zIndex: 30,
+              visible: true,
+              opacity: 1,
+              customColor: null,
+            }}
+            onConfigChange={(_, patch) => {
+              if (patch.x !== undefined || patch.y !== undefined) {
+                timer.setPosition({
+                  x: patch.x ?? timer.position.x,
+                  y: patch.y ?? timer.position.y,
+                });
+              }
+            }}
+            onDoubleClick={() => {}}
+            containerRef={containerRef}
+            dragSensitivity={layoutCtx.dragSensitivity}
+          >
+            <TimerDisplay timer={timer} textClass={currentTheme.textClass} />
+          </DraggableElement>
         )}
 
         {/* 设置面板 - 通过 Context 消费，不需要传 props */}
