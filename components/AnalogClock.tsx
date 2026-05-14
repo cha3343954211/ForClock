@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ThemeConfig } from '../types';
 import { COLOR_PRESETS } from '../constants';
-import { useTime } from '../contexts/TimeContext';
+import { useDisplayTime } from '../contexts/DisplayTimeContext';
 
 interface AnalogClockProps {
   theme: ThemeConfig;
@@ -20,13 +20,14 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
   isSmooth = false,
   showHourNumbers = false
 }) => {
-  const time = useTime();
+  const { time, isTimerMode } = useDisplayTime();
+  // 平滑扫秒仅在真实时间模式下启用；计时器模式直接用计时时间
   // We use internal state for smooth animations to bypass the 1-second tick from App.tsx
   const [internalAngles, setInternalAngles] = useState({ h: 0, m: 0, s: 0 });
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    if (isSmooth) {
+    if (isSmooth && !isTimerMode) {
       const loop = () => {
         const now = new Date();
         const ms = now.getMilliseconds();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeConfig } from '../types';
-import { useTime } from '../contexts/TimeContext';
+import { useDisplayTime } from '../contexts/DisplayTimeContext';
 
 interface DateLineProps {
     theme: ThemeConfig;
@@ -15,7 +15,7 @@ export const DateLine: React.FC<DateLineProps> = ({
     customColor,
     customFont
 }) => {
-    const time = useTime();
+    const { time } = useDisplayTime();
     const isGradient = customColor?.includes('gradient');
 
     const textStyle: React.CSSProperties = {
