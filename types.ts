@@ -3,7 +3,6 @@ export enum ClockMode {
   DIGITAL = 'DIGITAL',
   ANALOG = 'ANALOG',
   DUAL = 'DUAL',
-  TEXT = 'TEXT'
 }
 
 export enum ThemeId {

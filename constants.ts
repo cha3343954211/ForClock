@@ -32,7 +32,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textClass: 'text-white drop-shadow-md',
     accentClass: 'text-emerald-300',
     fontFamily: 'font-sans',
-    backgroundImage: 'https://picsum.photos/1920/1080?grayscale&blur=2'
+    backgroundImage: '/forest-bg.svg'
   },
   [ThemeId.TERMINAL_RETRO]: {
     id: ThemeId.TERMINAL_RETRO,

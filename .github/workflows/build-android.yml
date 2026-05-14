@@ -1,0 +1,68 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build web assets & sync Capacitor
+        run: npm run build:cap
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Gradle execute permission
+        run: chmod +x android/gradlew
+
+      - name: Build Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug \
+            -Dorg.gradle.jvmargs="-Xmx2g" \
+            --no-daemon \
+            --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZenClock-Android-Debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: Build summary
+        run: |
+          APK_SIZE=$(du -sh android/app/build/outputs/apk/debug/app-debug.apk | cut -f1)
+          echo "## ✅ Android Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**APK Size:** $APK_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**安装方式（任选其一）：**" >> $GITHUB_STEP_SUMMARY
+          echo "1. 下载 Artifact → 通过 USB 传到手机 → 直接安装（需开启 允许未知来源）" >> $GITHUB_STEP_SUMMARY
+          echo "2. 使用爱思助手 / ADB 安装" >> $GITHUB_STEP_SUMMARY

@@ -27,6 +27,39 @@ interface InteractionState {
 
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&';
 
+/** MediaPipe 手部关键点结构 */
+interface Landmark {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface HandLandmarkerResult {
+  landmarks: Landmark[][];
+}
+
+// --- 粒子配置常量 ---
+const PARTICLE_COUNT = {
+  SNOW: 200,
+  STARS: 120,
+  RAIN: 400,
+  MATRIX: 300,
+} as const;
+
+const INTERACTION_RADIUS = {
+  DEFAULT: 300,
+  POINTING: 200,
+  OPEN_HAND: 500,
+} as const;
+
+const PHYSICS = {
+  FIST_PULL: 40.0,
+  OPEN_PUSH: 15.0,
+  POINT_MAGNET: 0.8,
+  RAIN_WIND: 2,
+  MATRIX_DISTORT: 5,
+} as const;
+
 class Particle {
   x: number;
   y: number;
@@ -124,9 +157,9 @@ class Particle {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       // Interaction Radius depends on gesture
-      let radius = 300;
-      if (interaction.type === GestureType.POINTING) radius = 200;
-      if (interaction.type === GestureType.OPEN_HAND) radius = 500;
+      let radius: number = INTERACTION_RADIUS.DEFAULT;
+      if (interaction.type === GestureType.POINTING) radius = INTERACTION_RADIUS.POINTING;
+      if (interaction.type === GestureType.OPEN_HAND) radius = INTERACTION_RADIUS.OPEN_HAND;
       if (interaction.type === GestureType.FIST) radius = Math.max(width, height) * 2;
 
       if (dist < radius) {
@@ -177,7 +210,7 @@ class Particle {
             // Standard Logic for Snow/Stars
             switch (interaction.type) {
               case GestureType.FIST:
-                const pullStrength = 40.0 * interaction.strength;
+                const pullStrength = PHYSICS.FIST_PULL * interaction.strength;
                 const jitter = (Math.random() - 0.5) * 5;
                 this.vx += Math.cos(angle) * pullStrength * force + jitter;
                 this.vy += Math.sin(angle) * pullStrength * force + jitter;
@@ -186,12 +219,12 @@ class Particle {
                 if (dist < 100) { this.vx *= 0.6; this.vy *= 0.6; }
                 break;
               case GestureType.OPEN_HAND:
-                const pushStrength = 15.0 * interaction.strength;
+                const pushStrength = PHYSICS.OPEN_PUSH * interaction.strength;
                 this.vx -= Math.cos(angle) * force * pushStrength;
                 this.vy -= Math.sin(angle) * force * pushStrength;
                 break;
               case GestureType.POINTING:
-                const magnetStrength = 0.8 * interaction.strength;
+                const magnetStrength = PHYSICS.POINT_MAGNET * interaction.strength;
                 this.vx += Math.cos(angle) * force * magnetStrength;
                 this.vy += Math.sin(angle) * force * magnetStrength;
                 break;
@@ -496,21 +529,20 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      let count = 0;
-      switch (mode) {
-        case ParticleMode.SNOW: count = 200; break;
-        case ParticleMode.STARS: count = 120; break;
-        case ParticleMode.RAIN: count = 400; break; // Heavy rain
-        case ParticleMode.MATRIX: count = 300; break;
-        default: count = 0;
-      }
+      const COUNT_MAP: Partial<Record<ParticleMode, number>> = {
+        [ParticleMode.SNOW]:   PARTICLE_COUNT.SNOW,
+        [ParticleMode.STARS]:  PARTICLE_COUNT.STARS,
+        [ParticleMode.RAIN]:   PARTICLE_COUNT.RAIN,
+        [ParticleMode.MATRIX]: PARTICLE_COUNT.MATRIX,
+      };
+      const count = COUNT_MAP[mode] ?? 0;
 
       particlesRef.current = Array.from({ length: count }, () =>
         new Particle(canvas.width, canvas.height, mode, isLightTheme)
       );
     };
 
-    const processHandGesture = (results: any): InteractionState => {
+    const processHandGesture = (results: HandLandmarkerResult): InteractionState => {
       if (!results.landmarks || results.landmarks.length === 0) {
         return { type: GestureType.NONE, x: 0, y: 0, strength: 0 };
       }
@@ -527,7 +559,7 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
       const wrist = landmarks[0];
       const middleMCP = landmarks[9];
 
-      const getDist = (p1: any, p2: any) => Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+      const getDist = (p1: Landmark, p2: Landmark) => Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 
       const palmSize = getDist(wrist, middleMCP);
 

@@ -41,11 +41,11 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
   const { layout, dragSensitivity, setDragSensitivity, resetLayout, setLayerOrder } = layoutCtx;
 
   const {
-    themeId, clockMode, particleMode, showSeconds, isSmooth, isFlip,
+    themeId, clockMode, particleMode, showSeconds, use24Hour, isSmooth, isFlip,
     showHourNumbers, isCameraEnabled, customBackground, customColor,
     showWisdom, aiConfig,
     setThemeId, setClockMode, setParticleMode,
-    toggleSeconds, toggleSmooth, toggleFlip, toggleHourNumbers,
+    toggleSeconds, toggle24Hour, toggleSmooth, toggleFlip, toggleHourNumbers,
     toggleCamera, toggleWisdom, clearBackground, setAiConfig,
   } = settings;
 
@@ -160,6 +160,15 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
               title={showSeconds ? "Hide Seconds" : "Show Seconds"}
             >
               {showSeconds ? <Timer size={18} /> : <TimerOff size={18} />}
+            </button>
+
+            {/* 24H / 12H Toggle */}
+            <button
+              onClick={toggle24Hour}
+              className={`p-2 transition-all rounded-lg text-[11px] font-mono font-bold leading-none ${use24Hour ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
+              title={use24Hour ? "切换到 12 小时制" : "切换到 24 小时制"}
+            >
+              {use24Hour ? '24H' : '12H'}
             </button>
 
             {/* Custom Background Input */}
