@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { THEMES } from './constants';
-import { ThemeId, ClockMode, TimeState, ParticleMode, AIConfig, LayoutConfig, ElementConfig } from './types';
+import { ThemeId, ClockMode, ParticleMode, AIConfig, LayoutConfig, ElementConfig } from './types';
 import { DigitalClock } from './components/DigitalClock';
-import { AnalogClock } from './components/AnalogClock';
 import { Controls } from './components/Controls';
-import { ParticlesCanvas } from './components/ParticlesCanvas';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DraggableElement } from './components/DraggableElement';
 import { ElementSettings } from './components/ElementSettings';
 import { DateLine } from './components/DateLine';
 import { generateTimeReflection } from './services/geminiService';
 
+// 代码分割：重型组件按需加载
+// - AnalogClock: 仅 Analog/Dual 模式需要
+// - ParticlesCanvas: 含 MediaPipe 依赖，仅在启用粒子效果时加载
+const AnalogClock = lazy(() => import('./components/AnalogClock').then(m => ({ default: m.AnalogClock })));
+const ParticlesCanvas = lazy(() => import('./components/ParticlesCanvas').then(m => ({ default: m.ParticlesCanvas })));
+
 const App: React.FC = () => {
   // --- State ---
-  const [time, setTime] = useState<TimeState>({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    period: 'AM',
-    fullDate: ''
-  });
+  // 注意：time 状态已抽离到 TimeContext，由 TimeProvider 管理
+  // 子组件（DigitalClock/AnalogClock/DateLine）通过 useTime() 直接订阅
+  // 这样 App 不再每秒重渲染整棵树
   const [themeId, setThemeId] = useState<ThemeId>(ThemeId.MINIMAL_DARK);
   const [clockMode, setClockMode] = useState<ClockMode>(ClockMode.DIGITAL);
   const [particleMode, setParticleMode] = useState<ParticleMode>(ParticleMode.NONE);
@@ -107,28 +107,6 @@ const App: React.FC = () => {
     setWisdom("");
   }, [themeId]);
 
-  // Time Loop
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime({
-        hours: now.getHours(),
-        minutes: now.getMinutes(),
-        seconds: now.getSeconds(),
-        period: now.getHours() >= 12 ? 'PM' : 'AM',
-        fullDate: now.toLocaleDateString(undefined, {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })
-      });
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   // --- Handlers ---
 
   const handleConfigChange = (id: string, newConfig: Partial<ElementConfig>) => {
@@ -157,7 +135,12 @@ const App: React.FC = () => {
   const handleGenerateWisdom = async () => {
     if (isGeneratingWisdom) return;
     setIsGeneratingWisdom(true);
-    const timeString = `${time.hours}:${time.minutes.toString().padStart(2, '0')} ${time.period}`;
+    // 按需读取当前时间，避免维持时间状态
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const timeString = `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
     const result = await generateTimeReflection(timeString, currentTheme.label, aiConfig);
     setWisdom(result);
     setIsGeneratingWisdom(false);
@@ -201,7 +184,6 @@ const App: React.FC = () => {
           dragSensitivity={dragSensitivity}
         >
           <DigitalClock
-            time={time}
             theme={currentTheme}
             showSeconds={showSeconds}
             use24Hour={use24Hour}
@@ -227,15 +209,16 @@ const App: React.FC = () => {
           containerRef={containerRef}
           dragSensitivity={dragSensitivity}
         >
-          <AnalogClock
-            time={time}
-            theme={currentTheme}
-            showSeconds={showSeconds}
-            customColor={layout.analogClock.customColor || customColor}
-            customFont={customFont}
-            isSmooth={isSmooth}
-            showHourNumbers={showHourNumbers}
-          />
+          <Suspense fallback={null}>
+            <AnalogClock
+              theme={currentTheme}
+              showSeconds={showSeconds}
+              customColor={layout.analogClock.customColor || customColor}
+              customFont={customFont}
+              isSmooth={isSmooth}
+              showHourNumbers={showHourNumbers}
+            />
+          </Suspense>
         </DraggableElement>
       );
     }
@@ -254,7 +237,6 @@ const App: React.FC = () => {
         dragSensitivity={dragSensitivity}
       >
         <DateLine
-          time={time}
           theme={currentTheme}
           use24Hour={use24Hour}
           customColor={layout.dateLine.customColor || customColor}
@@ -287,14 +269,18 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none" />
       )}
 
-      {/* Partices */}
-      <ErrorBoundary fallback={null}>
-        <ParticlesCanvas
-          mode={particleMode}
-          theme={currentTheme}
-          isCameraEnabled={isCameraEnabled}
-        />
-      </ErrorBoundary>
+      {/* Particles - 按需加载，NONE 模式下不会加载 MediaPipe 代码 */}
+      {particleMode !== ParticleMode.NONE && (
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <ParticlesCanvas
+              mode={particleMode}
+              theme={currentTheme}
+              isCameraEnabled={isCameraEnabled}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      )}
 
       {/* Top Trigger */}
       <div

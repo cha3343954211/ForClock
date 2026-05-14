@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { TimeState, ThemeConfig } from '../types';
+import { ThemeConfig } from '../types';
 import { COLOR_PRESETS } from '../constants';
+import { useTime } from '../contexts/TimeContext';
 
 interface AnalogClockProps {
-  time: TimeState;
   theme: ThemeConfig;
   showSeconds: boolean;
   customColor: string | null;
@@ -13,7 +13,6 @@ interface AnalogClockProps {
 }
 
 export const AnalogClock: React.FC<AnalogClockProps> = ({
-  time,
   theme,
   showSeconds,
   customColor,
@@ -21,6 +20,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
   isSmooth = false,
   showHourNumbers = false
 }) => {
+  const time = useTime();
   // We use internal state for smooth animations to bypass the 1-second tick from App.tsx
   const [internalAngles, setInternalAngles] = useState({ h: 0, m: 0, s: 0 });
   const rafRef = useRef<number>(0);

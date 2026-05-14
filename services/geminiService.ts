@@ -1,15 +1,17 @@
 
-import { GoogleGenAI } from "@google/genai";
+import type { GoogleGenAI as GoogleGenAIType } from "@google/genai";
 import { AIConfig } from "../types";
 
-let defaultGenAI: GoogleGenAI | null = null;
+// 注意：@google/genai 体积约 253KB，改为动态 import，只在调用 AI 时下载
+let defaultGenAI: GoogleGenAIType | null = null;
+let GoogleGenAICtor: typeof GoogleGenAIType | null = null;
 
-try {
-  if (process.env.API_KEY) {
-    defaultGenAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
+async function loadGenAI(): Promise<typeof GoogleGenAIType> {
+  if (!GoogleGenAICtor) {
+    const mod = await import('@google/genai');
+    GoogleGenAICtor = mod.GoogleGenAI;
   }
-} catch (error) {
-  console.error("Failed to initialize GoogleGenAI", error);
+  return GoogleGenAICtor;
 }
 
 export const generateTimeReflection = async (
@@ -78,7 +80,7 @@ export const generateTimeReflection = async (
     }
   }
 
-  // 2. Handle Google Gemini
+  // 2. Handle Google Gemini - 按需动态加载 SDK
   let aiClient = defaultGenAI;
   let modelName = 'gemini-3-flash-preview';
 
@@ -86,10 +88,20 @@ export const generateTimeReflection = async (
   if (config && config.provider === 'gemini') {
     if (config.apiKey) {
       try {
-        aiClient = new GoogleGenAI({ apiKey: config.apiKey });
+        const GenAI = await loadGenAI();
+        aiClient = new GenAI({ apiKey: config.apiKey });
       } catch (e) {
         console.error("Invalid Custom Gemini Key", e);
         return "Invalid API Key.\n无效的API密钥。";
+      }
+    } else if (process.env.API_KEY && !aiClient) {
+      // 默认从环境变量初始化（懒加载）
+      try {
+        const GenAI = await loadGenAI();
+        defaultGenAI = new GenAI({ apiKey: process.env.API_KEY });
+        aiClient = defaultGenAI;
+      } catch (error) {
+        console.error("Failed to initialize GoogleGenAI", error);
       }
     }
     if (config.model) {

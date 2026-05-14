@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ParticleMode, ThemeConfig, ThemeId } from '../types';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+// 注意：MediaPipe SDK 通过动态 import 加载，仅在 isCameraEnabled 时下载
+// 这样关闭手势识别的用户可节省约 200KB 解析代码
+import type { HandLandmarker as HandLandmarkerType } from '@mediapipe/tasks-vision';
 
 interface ParticlesCanvasProps {
   mode: ParticleMode;
@@ -320,7 +322,7 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
 
   // Hand Detection Refs
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
+  const landmarkerRef = useRef<HandLandmarkerType | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
   const lastGestureTypeRef = useRef<GestureType>(GestureType.NONE); // Optimization: Track last gesture
 
@@ -340,6 +342,11 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
         setModelStatus('Loading WASM...');
 
         try {
+          // 动态加载 MediaPipe SDK（仅在用户启用摄像头时下载）
+          setModelStatus('Loading SDK...');
+          const { FilesetResolver, HandLandmarker } = await import('@mediapipe/tasks-vision');
+          if (!isMounted) return;
+
           // Use local WASM files for better Android WebView compatibility
           const wasmPath = '/mediapipe';
           const vision = await FilesetResolver.forVisionTasks(wasmPath);
@@ -347,13 +354,13 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
           setModelStatus('WASM loaded, creating model...');
 
           // Try GPU first, fallback to CPU for Android WebView
-          let landmarker: HandLandmarker | null = null;
+          let landmarker: HandLandmarkerType | null = null;
 
           // Use local model file
           const modelPath = '/mediapipe/hand_landmarker.task';
 
           try {
-            // First try with GPU
+            // First try with GPU - HandLandmarker comes from dynamic import above
             landmarker = await HandLandmarker.createFromOptions(vision, {
               baseOptions: {
                 modelAssetPath: modelPath,
@@ -373,7 +380,7 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
             if (!isMounted) return;
             setModelStatus('GPU failed, trying CPU...');
 
-            // Fallback to CPU
+            // Fallback to CPU - HandLandmarker comes from dynamic import above
             landmarker = await HandLandmarker.createFromOptions(vision, {
               baseOptions: {
                 modelAssetPath: modelPath,

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { TimeState, ThemeConfig } from '../types';
+import { ThemeConfig } from '../types';
+import { useTime } from '../contexts/TimeContext';
 
 interface DigitalClockProps {
-  time: TimeState;
   theme: ThemeConfig;
   showSeconds: boolean;
   use24Hour: boolean;
@@ -217,7 +217,6 @@ const FlipDigit: React.FC<{
 };
 
 export const DigitalClock: React.FC<DigitalClockProps> = ({
-  time,
   theme,
   showSeconds,
   use24Hour,
@@ -227,6 +226,7 @@ export const DigitalClock: React.FC<DigitalClockProps> = ({
   isFlip = false,
   showDate = false
 }) => {
+  const time = useTime();
   const formatNumber = (num: number) => num.toString().padStart(2, '0');
 
   const displayHours = use24Hour
