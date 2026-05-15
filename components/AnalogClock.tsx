@@ -21,28 +21,40 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
   showHourNumbers = false
 }) => {
   const time = useTime();
-  // We use internal state for smooth animations to bypass the 1-second tick from App.tsx
   const [internalAngles, setInternalAngles] = useState({ h: 0, m: 0, s: 0 });
   const rafRef = useRef<number>(0);
 
+  // 非平滑模式：记录历史原始角度和累积角度，确保值只增不减
+  const prevRawRef = useRef({ s: -1, m: -1, h: -1 });
+  const accumRef  = useRef({ s: 0,  m: 0,  h: 0 });
+
+  /** 将原始角度累计：跨过 360° 时加上一圈而非回零 */
+  const accum = (prevRaw: number, currRaw: number, acc: number): number => {
+    if (prevRaw < 0) return currRaw; // 首次渲染，直接使用当前值
+    let delta = currRaw - prevRaw;
+    if (delta < -180) delta += 360; // 正常跨圈：354°→0° 变为 delta=+6°
+    return acc + delta;
+  };
+
   useEffect(() => {
     if (isSmooth) {
+      // 切换到平滑模式时重置 tick 累积器，避免切回时角度异常
+      prevRawRef.current = { s: -1, m: -1, h: -1 };
+
       const loop = () => {
         const now = new Date();
-        const ms = now.getMilliseconds();
-        const s = now.getSeconds();
-        const m = now.getMinutes();
-        const h = now.getHours();
+        const h   = now.getHours();
+        const m   = now.getMinutes();
+        const s   = now.getSeconds();
+        const ms  = now.getMilliseconds();
 
-        // Continuous degrees
-        const totalSeconds = s + ms / 1000;
-        const totalMinutes = m + totalSeconds / 60;
-        const totalHours = (h % 12) + totalMinutes / 60;
+        // 从当天零点计算总秒数，全天单调递增，完全消除 360° 回绕闪烁
+        const totalSec = h * 3600 + m * 60 + s + ms / 1000;
 
         setInternalAngles({
-          s: totalSeconds * 6,
-          m: totalMinutes * 6,
-          h: totalHours * 30
+          s: (totalSec / 60)    * 360,   // 每 60s 转一圈
+          m: (totalSec / 3600)  * 360,   // 每 60min 转一圈
+          h: (totalSec / 43200) * 360,   // 每 12h 转一圈
         });
 
         rafRef.current = requestAnimationFrame(loop);
@@ -51,19 +63,21 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
       loop();
       return () => cancelAnimationFrame(rafRef.current);
     } else {
-      // Fallback to integer props if not smooth
-      // Calculate degrees based on standard props
-      const secondDegrees = ((time.seconds / 60) * 360);
-      const minuteDegrees = ((time.minutes / 60) * 360) + ((time.seconds / 60) * 6);
-      const hourDegrees = ((time.hours / 12) * 360) + ((time.minutes / 60) * 30);
+      // Tick 模式：用累积角度确保永远向前，消除 CSS transition 逆时针闪烁
+      const rawS = time.seconds * 6;
+      const rawM = (time.minutes / 60) * 360 + (time.seconds / 60) * 6;
+      const rawH = ((time.hours % 12) / 12) * 360 + (time.minutes / 60) * 30;
 
-      setInternalAngles({
-        s: secondDegrees,
-        m: minuteDegrees,
-        h: hourDegrees
-      });
+      const s = accum(prevRawRef.current.s, rawS, accumRef.current.s);
+      const m = accum(prevRawRef.current.m, rawM, accumRef.current.m);
+      const h = accum(prevRawRef.current.h, rawH, accumRef.current.h);
+
+      prevRawRef.current = { s: rawS, m: rawM, h: rawH };
+      accumRef.current   = { s, m, h };
+
+      setInternalAngles({ s, m, h });
     }
-  }, [isSmooth, time]); // If not smooth, update when time prop changes
+  }, [isSmooth, time]);
 
   // Destructure for rendering
   const { s: secondDegrees, m: minuteDegrees, h: hourDegrees } = internalAngles;
