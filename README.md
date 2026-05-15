@@ -99,7 +99,7 @@ Integrated with **Google Gemini AI** to generate poetic reflections or philosoph
 **3 步安装，立即体验！**
 
 1. **下载安装包**  
-   从 [Releases](https://github.com/yourusername/zen-clock/releases) 下载最新 APK 文件
+   从 [Releases](https://github.com/cha3343954211/zen-clock/releases) 下载最新 APK 文件
 
 2. **安装应用**  
    在 Android 设备上启用"未知来源安装"，然后安装 APK
@@ -116,14 +116,14 @@ Integrated with **Google Gemini AI** to generate poetic reflections or philosoph
 
 **即将推出** - 目前可通过以下方式体验：
 - Web 版：使用 Safari 浏览器访问
-- 关注 [Releases](https://github.com/yourusername/zen-clock/releases) 获取 TestFlight 测试邀请
+- 关注 [Releases](https://github.com/cha3343954211/zen-clock/releases) 获取 TestFlight 测试邀请
 
 ---
 
 ### 💻 网页版 / 桌面版
 
 #### 方式一：下载即用（推荐）
-从 [Releases](https://github.com/yourusername/zen-clock/releases) 下载最新版本，解压后在浏览器中打开 `index.html`。
+从 [Releases](https://github.com/cha3343954211/zen-clock/releases) 下载最新版本，解压后在浏览器中打开 `index.html`。
 
 #### 方式二：本地开发
 
@@ -133,7 +133,7 @@ Integrated with **Google Gemini AI** to generate poetic reflections or philosoph
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/zen-clock.git
+git clone https://github.com/cha3343954211/zen-clock.git
 cd zen-clock
 
 # 安装依赖
@@ -491,7 +491,7 @@ For questions, suggestions, or issues, please open an issue on GitHub or contact
 **3 步安装，立即体验！**
 
 1. **下载安装包**  
-   从 [Releases](https://github.com/yourusername/zen-clock/releases) 下载最新 APK 文件
+   从 [Releases](https://github.com/cha3343954211/zen-clock/releases) 下载最新 APK 文件
 
 2. **安装应用**  
    在 Android 设备上启用"未知来源安装"，然后安装 APK
@@ -508,14 +508,14 @@ For questions, suggestions, or issues, please open an issue on GitHub or contact
 
 **即将推出** - 目前可通过以下方式体验：
 - Web 版：使用 Safari 浏览器访问
-- 关注 [Releases](https://github.com/yourusername/zen-clock/releases) 获取 TestFlight 测试邀请
+- 关注 [Releases](https://github.com/cha3343954211/zen-clock/releases) 获取 TestFlight 测试邀请
 
 ---
 
 ### 💻 网页版 / 桌面版
 
 #### 方式一：下载即用（推荐）
-从 [Releases](https://github.com/yourusername/zen-clock/releases) 下载最新版本，解压后在浏览器中打开 `index.html`。
+从 [Releases](https://github.com/cha3343954211/zen-clock/releases) 下载最新版本，解压后在浏览器中打开 `index.html`。
 
 #### 方式二：本地开发
 
@@ -639,9 +639,9 @@ We welcome contributions from the community! Please read our [Contributing Guide
 
 ## 📧 Contact & Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/zen-clock/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/zen-clock/discussions)
-- **Email**: your-email@example.com
+- **Issues**: [GitHub Issues](https://github.com/cha3343954211/zen-clock/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/cha3343954211/zen-clock/discussions)
+- **Email**: 3343954211@qq.com
 
 **If you enjoy For Clock, please consider giving it a ⭐ star on GitHub!**
 
