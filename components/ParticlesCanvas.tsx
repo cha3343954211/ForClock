@@ -357,7 +357,12 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const landmarkerRef = useRef<HandLandmarkerType | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
-  const lastGestureTypeRef = useRef<GestureType>(GestureType.NONE); // Optimization: Track last gesture
+  const lastGestureTypeRef = useRef<GestureType>(GestureType.NONE);
+  // 粒子物理直接读此 ref，不触发 React re-render
+  const interactionRef = useRef<InteractionState>({ type: GestureType.NONE, x: 0, y: 0, strength: 0 });
+  // 每隔 N 帧才跑一次推理（15fps 检测 + 60fps 渲染，分离两个循环）
+  const frameCountRef = useRef<number>(0);
+  const DETECT_EVERY_N = 4; // 60fps ÷ 4 ≈ 15fps 推理
 
   const [gestureState, setGestureState] = useState<InteractionState>({ type: GestureType.NONE, x: 0, y: 0, strength: 0 });
   const [isModelLoading, setIsModelLoading] = useState(false);
@@ -470,12 +475,13 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
           }
 
           // Request camera permission with explicit front-facing camera
+          // 320×240@15fps — MediaPipe 精度足够，主线程压力减少 75%
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
-              width: { ideal: 640 },
-              height: { ideal: 480 },
-              frameRate: { ideal: 30 },
-              facingMode: 'user' // Explicitly use front camera
+              width:  { ideal: 320 },
+              height: { ideal: 240 },
+              frameRate: { ideal: 15, max: 20 },
+              facingMode: 'user'
             }
           });
 
@@ -495,10 +501,12 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
           }
 
           if (videoRef.current) {
+            videoRef.current.width  = 320;
+            videoRef.current.height = 240;
             videoRef.current.srcObject = stream;
             await videoRef.current.play();
             setCameraStatus(`Camera OK (${videoRef.current.videoWidth}x${videoRef.current.videoHeight})`);
-            console.log("Camera started successfully:", videoRef.current.videoWidth, "x", videoRef.current.videoHeight);
+            console.log("Camera started:", videoRef.current.videoWidth, "x", videoRef.current.videoHeight);
           }
         } catch (err) {
           console.error("Camera Error:", err);
@@ -604,32 +612,35 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
         return;
       }
 
-      // 1. Detect Hands
-      let currentInteraction: InteractionState = { type: GestureType.NONE, x: 0, y: 0, strength: 0 };
-
-      if (isCameraEnabled && landmarkerRef.current && videoRef.current && videoRef.current.currentTime !== lastVideoTimeRef.current) {
+      // 1. Detect Hands（每 DETECT_EVERY_N 帧跑一次推理，其余帧复用上次结果）
+      frameCountRef.current++;
+      if (
+        isCameraEnabled &&
+        landmarkerRef.current &&
+        videoRef.current &&
+        frameCountRef.current % DETECT_EVERY_N === 0 &&
+        videoRef.current.currentTime !== lastVideoTimeRef.current
+      ) {
         lastVideoTimeRef.current = videoRef.current.currentTime;
-        const startTimeMs = performance.now();
-        const results = landmarkerRef.current.detectForVideo(videoRef.current, startTimeMs);
-        currentInteraction = processHandGesture(results);
+        const results = landmarkerRef.current.detectForVideo(videoRef.current, performance.now());
+        const detected = processHandGesture(results);
+        interactionRef.current = detected; // 粒子物理读 ref，零 re-render
 
-        // Optimization: Only update React state if the gesture type changes
-        // This prevents 60fps re-renders of the component, significantly improving fluidity
-        if (currentInteraction.type !== lastGestureTypeRef.current) {
-          lastGestureTypeRef.current = currentInteraction.type;
-          setGestureState(currentInteraction);
+        // UI 指示器：仅手势类型变化时才触发 React 重渲染
+        if (detected.type !== lastGestureTypeRef.current) {
+          lastGestureTypeRef.current = detected.type;
+          setGestureState(detected);
         }
       }
 
       // 2. Clear
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 3. Visualize Interaction Zone -> REMOVED per user request for cleaner/smoother look
-
-      // 4. Update Particles
+      // 3. Update Particles（读 interactionRef，不依赖 React state，无需等待重渲染）
+      const ci = interactionRef.current;
       particlesRef.current.forEach(p => {
-        p.update(canvas.width, canvas.height, mode, currentInteraction);
-        p.draw(ctx, mode, currentInteraction);
+        p.update(canvas.width, canvas.height, mode, ci);
+        p.draw(ctx, mode, ci);
       });
 
       animationRef.current = requestAnimationFrame(animate);
@@ -648,7 +659,10 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', handleResize);
     };
-  }, [mode, theme.id, isCameraEnabled, isModelLoading]);
+  // 移除 isModelLoading 依赖：模型加载完毕不应重建整个粒子系统
+  // landmarkerRef.current 在推理前会做 null 检查，无需在 effect 层感知
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, theme.id, isCameraEnabled]);
 
   if (mode === ParticleMode.NONE) return null;
 
