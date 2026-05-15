@@ -21,27 +21,39 @@
 
 ## 📥 下载
 
-| 平台 | 获取方式 |
-|---|---|
-| **Android** | [Releases](https://github.com/cha3343954211/oneclock/releases/latest) 下载 `For-Clock-Android.apk` |
-| **iOS** | [Releases](https://github.com/cha3343954211/oneclock/releases/latest) 下载 `For-Clock-iOS-unsigned.ipa`，用 [Sideloadly](https://sideloadly.io) 签名安装 |
-| **Web** | `git clone` 后 `npm run dev`，或直接部署 `dist/` |
+| 版本 | 平台 | 获取方式 |
+|---|---|---|
+| **For Clock** (稳定版) | Android | [Releases → `latest-build`](https://github.com/cha3343954211/oneclock/releases/tag/latest-build) 下载 `For-Clock-Android.apk` |
+| **For Clock** (稳定版) | iOS | 同上，下载 `For-Clock-iOS-unsigned.ipa` |
+| **For Clock Pro** (最新特性) | Android | [Releases → `latest-build-pro`](https://github.com/cha3343954211/oneclock/releases/tag/latest-build-pro) 下载 `For-Clock-Android.apk` |
+| **For Clock Pro** (最新特性) | iOS | 同上，下载 `For-Clock-iOS-unsigned.ipa` |
+| **Web / PWA** | 全平台 | `git clone` 后 `npm run dev`，或部署 `dist/` 目录 |
 
-> Android 安装前需在手机「设置 → 安全」中开启**允许安装未知来源应用**。  
-> iOS IPA 为未签名构建，安装后在「设置 → 通用 → VPN 与设备管理」信任证书。
+> **Android** 安装前需在「设置 → 安全」中开启**允许安装未知来源应用**。  
+> **iOS** IPA 为未签名构建，用 [Sideloadly](https://sideloadly.io) 安装后，在「设置 → 通用 → VPN 与设备管理」信任证书。
 
 ---
 
 ## ✨ 功能特性
 
-### 🕐 三种时钟模式
-| 模式 | 说明 |
+### �️ 多组件自由画布
+
+For Clock 采用**多组件画布**设计，所有元素均可自由摆放：
+
+| 组件类型 | 说明 |
 |---|---|
-| **数字时钟** | 翻页动画效果，支持 12/24 小时制 |
-| **模拟时钟** | 优雅表盘，可开启平滑扫描秒针 |
-| **双显模式** | 模拟表盘 + 数字时钟同屏显示 |
+| **数字时钟** | 翻页 / 滑动 / 渐隐多种动效，支持 12/24 小时制，可独立显示日期 |
+| **模拟时钟** | 优雅表盘，可开启平滑扫描秒针，支持多种表盘风格 |
+| **日历** | 展示当前日期与星期，多种排版样式 |
+| **计时器** | 秒表 + 倒计时，多实例并行，毫秒精度 |
+
+- **无限添加**：同类型组件可叠加（最多 12 个）
+- **无极缩放**：鼠标滚轮 / 双指捏合，缩放范围 0.05× — 50×
+- **拖拽定位**：任意拖移，支持旋转与透明度调节
+- **默认排版复位**：一键还原美观的默认布局（圆形钟居左 · 数字钟居右）
 
 ### 🎨 五套主题
+
 | 主题 | 风格 |
 |---|---|
 | **Midnight Void** | 极简黑，存在主义气质 |
@@ -51,24 +63,30 @@
 | **Retro Terminal** | 复古终端，绿色代码风 |
 
 ### 🌟 粒子特效
-**飞雪 · 星空 · 雨滴 · 矩阵代码** — 四种粒子系统，支持手势实时交互。
 
-### ⏱️ 计时器 / 秒表
-- **秒表**：毫秒精度，实时计时
-- **倒计时**：自定义时长，结束时声音提醒
+**飞雪 · 星空 · 雨滴 · 矩阵代码** — 四种粒子系统，支持鼠标与手势实时交互。
+
+### ⏱️ 计时器
+
+- **秒表**：毫秒精度，支持多个并行计时
+- **倒计时**：自定义时长，结束声音提醒
+- 每个计时器独立配色，互不干扰
 
 ### 🤖 AI 时光感悟
+
 - 接入 **Google Gemini / 自定义 OpenAI 兼容接口** 生成诗意时光感悟
-- **无需配置 API**：内置本地语句池，按主题 × 时段智能匹配，共 100+ 条双语语句
+- **无需 API Key**：内置本地语句池，按主题 × 时段智能匹配，100+ 条双语句子
 
 ### 🎛️ 深度自定义
-- **颜色**：实色或渐变（Sunset / Ocean / Aurora / Berry 等）
-- **字体**：现代无衬线 / 衬线 / 等宽 / 板式等多种
+
+- **颜色**：实色或渐变（Sunset / Ocean / Aurora / Berry 等预设）
+- **字体**：现代无衬线 / 衬线 / 等宽 / 板式等多种字体预设
 - **背景**：上传本地图片，或使用主题自带背景
-- **元素布局**：双击任意元素 → 独立调整位置 / 大小 / 旋转 / 透明度 / 层级
+- **每组件独立配置**：双击任意元素 → 调整样式、透明度、层级
 
 ### ✋ 手势控制
-开启摄像头后，使用 **MediaPipe** 识别手势，实时操控粒子：
+
+开启摄像头后，使用 **MediaPipe** 识别手势，实时操控粒子效果：
 
 | 手势 | 飞雪 / 星空 | 雨滴 | 矩阵 |
 |---|---|---|---|
@@ -81,20 +99,32 @@
 ## 🚀 使用说明
 
 ### 打开控制面板
-鼠标移至屏幕**顶部中央**，出现白色提示条后点击即可打开设置面板。点击面板外侧关闭。
+鼠标移至屏幕**顶部中央**，出现白色提示条后点击即可打开设置面板，点击面板外侧关闭。
 
-### 元素设置
-**双击**任意时钟元素（数字时钟 / 模拟时钟 / 日期）可打开该元素的独立配置面板，调整颜色、大小、位置、旋转等参数。
+### 添加 / 管理组件
+在控制面板顶部选择组件类型（数字钟 · 圆形钟 · 日历 · 计时器），点击「**+ 添加**」即可放置到画布。
+
+### 单个组件设置
+**双击**任意组件，打开该组件的独立配置面板，可调整：
+- 样式预设（翻页 / 滑动 / 渐隐 / 表盘风格等）
+- 透明度
+- 显示日期（数字时钟专属）
+
+### 缩放与布局
+- **鼠标滚轮** 或 **双指捏合** 对单个组件无极缩放
+- 拖拽移动，支持任意旋转
+- 「**默认排版复位**」一键回到美观预设布局
 
 ### AI 感悟
-无 API Key 时自动从本地语句池取句，有 API Key 时调用 AI 实时生成。  
-在设置 → AI 配置中填入 Gemini Key 或任意 OpenAI 兼容接口。
+无 API Key 时自动从本地语句池取句，有 Key 时调用 AI 实时生成。  
+在设置 → AI 配置中填入 Gemini Key 或任意 OpenAI 兼容接口地址。
 
 ---
 
 ## 🛠️ 开发指南
 
 ### 环境要求
+
 - Node.js 18+
 - npm
 
@@ -104,8 +134,14 @@
 git clone https://github.com/cha3343954211/oneclock.git
 cd oneclock
 
+# 稳定版（main）
+git checkout main
+
+# 最新特性版（pro）
+# git checkout pro
+
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:5173
 ```
 
 ### 常用命令
@@ -114,59 +150,74 @@ npm run dev        # http://localhost:3000
 npm run build          # 生产构建
 npm run preview        # 预览构建产物
 npm run build:cap      # 构建 Web 并同步至 Capacitor
-npm run open:android   # Android Studio 打开 Android 项目
-npm run open:ios       # Xcode 打开 iOS 项目
+npm run open:android   # 用 Android Studio 打开 Android 项目
+npm run open:ios       # 用 Xcode 打开 iOS 项目
+npm run lint           # ESLint 检查
+npm run format         # Prettier 格式化
 ```
 
 ### 技术栈
 
 | 层级 | 技术 |
 |---|---|
-| UI 框架 | React 19 + TypeScript |
+| UI 框架 | React 19 + TypeScript 5.8 |
 | 样式 | Tailwind CSS v4 |
-| 构建 | Vite 6 |
+| 构建工具 | Vite 6 + vite-plugin-pwa |
 | 手势识别 | MediaPipe Tasks Vision |
 | AI | Google Gemini / OpenAI 兼容接口 |
-| 移动端 | Capacitor 8 (iOS / Android) |
+| 移动端封装 | Capacitor 8（iOS + Android） |
 | 图标 | Lucide React |
 
 ### 项目结构
 
 ```
 for-clock/
-├── components/          # UI 组件
-│   ├── DigitalClock.tsx
-│   ├── AnalogClock.tsx
-│   ├── TimerDisplay.tsx
-│   ├── DateLine.tsx
-│   ├── ParticlesCanvas.tsx
-│   ├── Controls.tsx
-│   ├── ElementSettings.tsx
-│   └── DraggableElement.tsx
-├── hooks/               # 状态管理 Hooks
-│   ├── useSettings.ts
-│   ├── useLayout.ts
-│   └── useTimers.ts
+├── components/
+│   ├── DigitalClock.tsx      # 数字时钟（翻页/滑动/渐隐动效）
+│   ├── AnalogClock.tsx       # 模拟表盘
+│   ├── TimerDisplay.tsx      # 计时器 / 秒表
+│   ├── DateLine.tsx          # 日历组件
+│   ├── ParticlesCanvas.tsx   # 粒子特效画布
+│   ├── Controls.tsx          # 顶部控制面板
+│   ├── ElementSettings.tsx   # 单组件设置面板
+│   └── DraggableElement.tsx  # 拖拽 / 缩放 / 旋转容器
+├── hooks/
+│   ├── useSettings.ts        # 全局偏好设置
+│   ├── useWidgets.ts         # 多组件状态管理与持久化
+│   └── widgetPresets.ts      # 各类型样式预设定义
 ├── services/
-│   ├── geminiService.ts # AI 调用
-│   └── wisdomPool.ts    # 本地语句池
-├── constants.ts         # 主题 / 颜色预设
-├── types.ts
+│   ├── geminiService.ts      # AI 调用封装
+│   └── wisdomPool.ts         # 本地语句池
+├── contexts/
+│   ├── SettingsContext.tsx
+│   └── TimeContext.tsx
+├── constants.ts              # 主题 / 颜色 / 字体预设
+├── types.ts                  # TypeScript 类型定义
 ├── App.tsx
 └── index.html
 ```
 
+### 分支说明
+
+| 分支 | 应用名 | 定位 |
+|---|---|---|
+| `main` | For Clock | 稳定版，面向最终用户 |
+| `pro` | For Clock Pro | 最新特性，持续迭代 |
+
 ### CI / CD
 
-每次推送至 `main` 分支自动触发 **Build & Release** 流水线：
+推送至 `main` 或 `pro` 分支时自动触发 **Build & Release** 流水线：
 
 ```
-push → build-android (ubuntu) ┐
-                               ├─ 全部成功 → 创建 GitHub Release
-       build-ios (macos)      ┘
+push → build-android (ubuntu-latest) ┐
+                                      ├─ 全部成功 → 创建 GitHub Release
+       build-ios    (macos-latest)   ┘
 ```
 
-产物：`For-Clock-Android.apk` + `For-Clock-iOS-unsigned.ipa`，挂载至 `latest-build` Release。
+| 分支 | Release Tag | 产物文件名 |
+|---|---|---|
+| `main` | `latest-build` | `For-Clock-Android.apk` · `For-Clock-iOS-unsigned.ipa` |
+| `pro` | `latest-build-pro` | `For-Clock-Android.apk` · `For-Clock-iOS-unsigned.ipa` |
 
 ---
 
@@ -178,6 +229,6 @@ push → build-android (ubuntu) ┐
 
 <div align="center">
 
-**If you find this project useful, please consider giving it a ⭐**
+**觉得有用？请给个 ⭐ 支持一下**
 
 </div>
