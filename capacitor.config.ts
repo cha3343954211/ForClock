@@ -1,7 +1,7 @@
 ﻿import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.forclock.app',
+  appId: 'com.zenclock.app.pro',
   appName: 'For Clock Pro',
   webDir: 'dist',
   android: {
