@@ -96,7 +96,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
   const gradientId = 'clock-gradient'; // ID for SVG def
 
   // Helper to determine stroke color
-  const getStrokeColor = (fallbackClass: string) => {
+  const getStrokeColor = (_fallbackClass: string) => {
     if (isGradient) return `url(#${gradientId})`;
     if (customColor) return customColor;
     return 'currentColor'; // Will inherit from parent color if set, or rely on class

@@ -412,7 +412,6 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
               return;
             }
             setModelStatus('Model loaded (GPU)');
-            console.log("HandLandmarker loaded with GPU");
           } catch (gpuError) {
             console.warn("GPU delegate failed, falling back to CPU:", gpuError);
             if (!isMounted) return;
@@ -432,7 +431,6 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
               return;
             }
             setModelStatus('Model loaded (CPU)');
-            console.log("HandLandmarker loaded with CPU fallback");
           }
 
           landmarkerRef.current = landmarker;
@@ -506,7 +504,6 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
             videoRef.current.srcObject = stream;
             await videoRef.current.play();
             setCameraStatus(`Camera OK (${videoRef.current.videoWidth}x${videoRef.current.videoHeight})`);
-            console.log("Camera started:", videoRef.current.videoWidth, "x", videoRef.current.videoHeight);
           }
         } catch (err) {
           console.error("Camera Error:", err);
@@ -661,7 +658,6 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     };
   // 移除 isModelLoading 依赖：模型加载完毕不应重建整个粒子系统
   // landmarkerRef.current 在推理前会做 null 检查，无需在 effect 层感知
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, theme.id, isCameraEnabled]);
 
   if (mode === ParticleMode.NONE) return null;

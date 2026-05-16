@@ -42,7 +42,7 @@ interface ElementSettingsProps {
 
 export const ElementSettings: React.FC<ElementSettingsProps> = ({
     isOpen,
-    elementId,
+    elementId: _elementId,
     elementLabel,
     config,
     onConfigChange,

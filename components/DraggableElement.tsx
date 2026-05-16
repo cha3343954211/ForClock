@@ -37,7 +37,7 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
     useEffect(() => { cbRef.current   = onConfigChange; }, [onConfigChange]);
 
     // Calculate distance between two touch points
-    const getTouchDistance = (touches: TouchList) => {
+    const getTouchDistance = (touches: { length: number; [i: number]: { clientX: number; clientY: number } }) => {
         if (touches.length < 2) return 0;
         const dx = touches[0].clientX - touches[1].clientX;
         const dy = touches[0].clientY - touches[1].clientY;
@@ -45,7 +45,7 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
     };
 
     // Calculate angle between two touch points
-    const getTouchAngle = (touches: TouchList) => {
+    const getTouchAngle = (touches: { length: number; [i: number]: { clientX: number; clientY: number } }) => {
         if (touches.length < 2) return 0;
         const dx = touches[1].clientX - touches[0].clientX;
         const dy = touches[1].clientY - touches[0].clientY;
@@ -78,7 +78,7 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
         const newY = elementStartPos.current.y + deltaY;
 
         onConfigChange(id, { x: newX, y: newY });
-    }, [isDragging, id, onConfigChange, containerRef]);
+    }, [isDragging, id, onConfigChange, containerRef, dragSensitivity]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
@@ -150,7 +150,7 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
 
             onConfigChange(id, { x: newX, y: newY });
         }
-    }, [isPinching, isDragging, id, onConfigChange, containerRef]);
+    }, [isPinching, isDragging, id, onConfigChange, containerRef, dragSensitivity]);
 
     const handleTouchEnd = useCallback((e: TouchEvent) => {
         if (e.touches.length === 0) {

@@ -16,12 +16,6 @@ interface DigitalClockProps {
   stylePreset?: string;  // per-widget 展示风格
 }
 
-// Define interface for CSS variables to satisfy TypeScript
-interface CustomCSSProperties extends React.CSSProperties {
-  '--width'?: string | number;
-  '--height'?: string | number;
-  '--font-size'?: string | number;
-}
 
 type FlipAnimStyle = 'flip' | 'slide' | 'fade';
 

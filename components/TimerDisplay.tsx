@@ -71,7 +71,7 @@ interface TimerDisplayProps {
 
 // ---- 主组件 ----
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) => {
-  const { mode, status, accumulated, startTs, countdownTarget, customColor, name, fontPreset, stylePreset } = timer;
+  const { mode, status, accumulated, startTs, countdownTarget, customColor, fontPreset, stylePreset } = timer;
   const isStopwatch = mode === 'stopwatch';
   const isRunning   = status === 'running';
   const isFinished  = status === 'finished';

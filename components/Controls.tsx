@@ -28,7 +28,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { ParticleMode, AIConfig, AIProvider, WidgetType } from '../types';
-import { THEMES, COLOR_PRESETS } from '../constants';
+import { THEMES } from '../constants';
 import { WIDGET_LABELS } from '../hooks/useWidgets';
 import { useSettingsContext } from '../contexts/SettingsContext';
 
@@ -39,8 +39,8 @@ interface ControlsProps {
 }
 
 export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBackground }) => {
-  const { settings, widgets: widgetsCtx, isGeneratingWisdom, controlsVisible, setControlsVisible } = useSettingsContext();
-  const { widgets, dragSensitivity, setDragSensitivity, resetPositions, updateWidget, addWidget } = widgetsCtx;
+  const { settings, widgets: widgetsCtx, isGeneratingWisdom, controlsVisible } = useSettingsContext();
+  const { widgets, dragSensitivity, setDragSensitivity, resetPositions, addWidget } = widgetsCtx;
 
   const {
     themeId, particleMode, showSeconds, use24Hour,

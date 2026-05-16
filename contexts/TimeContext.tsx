@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { TimeState } from '../types';
 
 /**
