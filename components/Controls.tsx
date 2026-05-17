@@ -12,6 +12,7 @@ import {
   Camera,
   CameraOff,
   RefreshCcw,
+  Trash2,
   Timer,
   TimerOff,
   LayoutTemplate,
@@ -40,7 +41,14 @@ interface ControlsProps {
 
 export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBackground }) => {
   const { settings, widgets: widgetsCtx, isGeneratingWisdom, controlsVisible } = useSettingsContext();
-  const { widgets, dragSensitivity, setDragSensitivity, resetPositions, addWidget } = widgetsCtx;
+  const { widgets, dragSensitivity, setDragSensitivity, resetPositions, addWidget, clearAll } = widgetsCtx;
+
+  const handleClearAll = () => {
+    if (widgets.length === 0) return;
+    if (window.confirm(`确认清除画布上全部 ${widgets.length} 个组件？此操作不可撤销。`)) {
+      clearAll();
+    }
+  };
 
   const {
     themeId, particleMode, showSeconds, use24Hour,
@@ -183,13 +191,23 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
             />
           </div>
 
-          <button onClick={resetPositions}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-xl flex items-center justify-center gap-2 text-sm transition-all"
-            title="将所有组件归位到预设的美观默认排版"
-          >
-            <RefreshCcw size={14} />
-            默认排版复位
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={resetPositions}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-xl flex items-center justify-center gap-2 text-sm transition-all"
+              title="将所有组件归位到预设的美观默认排版"
+            >
+              <RefreshCcw size={14} />
+              默认排版复位
+            </button>
+            <button onClick={handleClearAll}
+              disabled={widgets.length === 0}
+              className="px-4 py-2 bg-red-500/15 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/20 hover:border-red-500/40 rounded-xl flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-red-500/15"
+              title="清空画布上的所有组件"
+            >
+              <Trash2 size={14} />
+              清除全部组件
+            </button>
+          </div>
         </div>
 
         <div className="h-[1px] bg-white/10 w-full" />

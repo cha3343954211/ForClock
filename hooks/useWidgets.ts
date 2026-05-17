@@ -225,6 +225,7 @@ export interface UseWidgetsReturn {
   removeWidget: (id: string) => void;
   updateWidget: (id: string, patch: Partial<WidgetRecord>) => void;
   resetPositions: () => void;
+  clearAll: () => void;
   setDragSensitivity: (v: number) => void;
   // 计时器操作（仅对 type==='timer' 的 widget 有效）
   startTimer: (id: string) => void;
@@ -277,6 +278,14 @@ export function useWidgets(): UseWidgetsReturn {
   }, []);
 
   const updateWidget = useCallback((id: string, p: Partial<WidgetRecord>) => patch(id, p), [patch]);
+
+  const clearAll = useCallback(() => {
+    setWidgets(() => {
+      save([]);
+      return [];
+    });
+    setActiveSettingsId(null);
+  }, []);
 
   const resetPositions = useCallback(() => {
     setWidgets(prev => {
@@ -341,6 +350,7 @@ export function useWidgets(): UseWidgetsReturn {
     removeWidget,
     updateWidget,
     resetPositions,
+    clearAll,
     setDragSensitivity,
     startTimer,
     pauseTimer,
