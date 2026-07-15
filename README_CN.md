@@ -1,134 +1,66 @@
-﻿# For Clock · 使用说明
+# For Clock · 中文快速指南
 
-**For Clock** 是一款极简禅意的沉浸式时钟屏保应用，集美学、互动与人工智能于一体。采用**多组件自由画布**设计，支持数字时钟、模拟时钟、日历、计时器任意组合摆放，辅以沉浸式粒子特效、AI 时光感悟和摄像头手势控制。
+For Clock 是一个基于 React、Vite 和 Capacitor 的沉浸式多组件时钟应用。当前开发版本位于 `yuhan` 分支。
 
----
+## 快速启动
 
-## 📥 下载安装
-
-| 版本 | 平台 | 方式 |
-|---|---|---|
-| **For Clock**（稳定版） | Android | [Releases → latest-build](https://github.com/cha3343954211/oneclock/releases/tag/latest-build) 下载 APK，开启「允许未知来源」后安装 |
-| **For Clock**（稳定版） | iOS | 同上，下载 IPA，用 [Sideloadly](https://sideloadly.io) 签名安装 |
-| **For Clock Pro**（最新特性） | Android / iOS | [Releases → latest-build-pro](https://github.com/cha3343954211/oneclock/releases/tag/latest-build-pro) |
-| **Web / PWA** | 全平台 | `npm run dev` 本地运行，或部署 `dist/` |
-
-> iOS 安装完成后，在「设置 → 通用 → VPN 与设备管理」信任开发者证书。
-
----
-
-## ✨ 核心功能
-
-### 🖥️ 多组件自由画布
-
-所有组件均可自由拖拽、无极缩放（0.05× — 50×）、旋转、调整透明度：
-
-| 组件 | 特性 |
-|---|---|
-| **数字时钟** | 翻页 / 滑动 / 渐隐三种动效；12/24 小时制；可独立显示日期行 |
-| **模拟时钟** | 优雅表盘，平滑扫秒，多种表盘风格 |
-| **日历** | 当前日期 + 星期，多种排版样式 |
-| **计时器** | 秒表 + 倒计时，多实例并行，独立配色 |
-
-**一键默认排版**：点击「默认排版复位」立即回到美观预设（圆形钟居左 · 数字钟居右）。
-
-### 🎨 五套主题
-
-| 主题 | 风格描述 |
-|---|---|
-| Midnight Void | 极简黑，存在主义气质 |
-| Paper White | 纸白，书写与诗意 |
-| Cyberpunk Neon | 赛博霓虹，科技感 |
-| Misty Forest | 自然森林，随机背景图 |
-| Retro Terminal | 复古终端，绿色代码风 |
-
-### 🌟 粒子特效
-
-**飞雪 · 星空 · 雨滴 · 矩阵代码** — 四种沉浸式粒子系统，鼠标与手势均可实时交互。
-
-### 🤖 AI 时光感悟
-
-- 内置 100+ 条双语本地语句，**无需 API Key** 即可使用
-- 接入 **Google Gemini** 或任意 **OpenAI 兼容接口**，实时生成诗意时光感悟
-
-### 🎛️ 深度自定义
-
-- **颜色**：实色或渐变预设（Sunset / Ocean / Aurora / Berry 等）
-- **字体**：无衬线 / 衬线 / 等宽 / 板式多种预设
-- **背景**：上传本地图片或使用主题自带背景
-- **组件独立配置**：双击任意组件 → 样式预设、透明度、层级
-
----
-
-## 🎮 操作指南
-
-### 唤出控制面板
-
-鼠标移至屏幕**顶部中央**，出现白色提示条后点击即可打开，点击面板外侧关闭。
-
-### 添加组件
-
-控制面板顶部选择类型（数字钟 · 圆形钟 · 日历 · 计时器），点击「**+ 添加**」放置到画布。
-
-### 单组件配置
-
-**双击**任意组件，打开独立设置面板：
-- 样式预设（翻页 / 滑动 / 渐隐 / 表盘风格）
-- 透明度滑杆
-- 显示日期开关（数字时钟专属）
-
-### 缩放与布局
-
-| 操作 | 效果 |
-|---|---|
-| 鼠标滚轮（组件上方） | 无极缩放该组件 |
-| 双指捏合（触屏） | 无极缩放该组件 |
-| 拖拽 | 自由移动 |
-| 默认排版复位 | 一键回到美观预设位置 |
-
----
-
-## ✋ 手势控制（需开启摄像头）
-
-将手掌正对摄像头，保持在画面中央：
-
-| 粒子模式 | ✊ 握拳 | 🖐 张掌 | 👆 食指 |
-|---|---|---|---|
-| **飞雪 / 星空** | 粒子强力聚拢 | 粒子向外驱散 | 轻微吸引 |
-| **雨滴** | 时间静止 | 雨伞模式（雨绕手滑落） | 风力操控 |
-| **矩阵** | 系统崩溃（代码变红抖动） | 力场扭曲 | 数据流向 |
-
----
-
-## ⚙️ 开发运行
+环境要求：Node.js 22+、npm 10+。
 
 ```bash
-git clone https://github.com/cha3343954211/oneclock.git
-cd oneclock
-
-# 切换分支（可选）
-# git checkout pro   # For Clock Pro 最新特性
-
-npm install
-npm run dev          # http://localhost:5173
+git clone --branch yuhan --single-branch https://github.com/cha3343954211/ForClock.git
+cd ForClock
+npm ci
+cp .env.local.example .env.local
+npm run dev
 ```
 
-**AI 功能配置**（可选）：复制 `.env.local.example` 为 `.env.local`，填入 Gemini Key 或 OpenAI 兼容接口地址。不配置时自动使用本地语句池，不影响基础功能。
+浏览器访问 <http://localhost:3000>。
 
----
+## 核心功能
 
-## 🛠️ 技术栈
+- 数字时钟、模拟时钟、日历、秒表和倒计时
+- 多组件自由拖拽、缩放、旋转和独立样式配置
+- 五套主题与 Snow、Rain、Stars、Matrix 粒子效果
+- MediaPipe 摄像头手势识别
+- Gemini / OpenAI 兼容 AI 服务与本地感悟语句池
+- PWA 离线缓存及 Android/iOS Capacitor 工程
 
-| 层级 | 技术 |
-|---|---|
-| UI 框架 | React 19 + TypeScript 5.8 |
-| 样式 | Tailwind CSS v4 |
-| 构建 | Vite 6 + vite-plugin-pwa |
-| 手势识别 | MediaPipe Tasks Vision |
-| AI | Google Gemini / OpenAI 兼容接口 |
-| 移动端 | Capacitor 8（iOS + Android） |
-| 图标 | Lucide React |
+## AI 配置
 
----
+`GEMINI_API_KEY` 不是启动项目的必需项。需要在线生成 AI 感悟时，编辑 `.env.local`：
 
-*享受您的禅意时光。*
+```dotenv
+GEMINI_API_KEY=your_key
+```
+
+也可以在应用内的 `AI Settings` 中设置服务商、接口地址、模型和密钥。
+
+## 常用命令
+
+```bash
+npm run dev          # 开发服务器：http://localhost:3000
+npm run build        # 生产构建
+npm run preview      # 预览生产构建
+npm run lint         # ESLint 检查
+npm run build:cap    # 构建并同步移动端工程
+npm run open:android # Android Studio
+npm run open:ios     # Xcode
+```
+
+## 移动端说明
+
+- Android：需要 Java 21、Android Studio 和 Android SDK
+- iOS：需要 macOS 和 Xcode，依赖由 Swift Package Manager 管理
+- Capacitor 8 要求 Node.js 22+
+- iOS 自动构建产物为未签名 IPA，需要自行签名后安装
+
+## 当前技术版本
+
+- React 19.2
+- TypeScript 5.8
+- Vite 6.4
+- Tailwind CSS 4.1
+- Capacitor 8
+- MediaPipe Tasks Vision 0.10
+
+完整说明请阅读 [README.md](README.md)、[DEVELOPMENT.md](DEVELOPMENT.md) 和 [DEPLOYMENT.md](DEPLOYMENT.md)。

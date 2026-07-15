@@ -1,381 +1,81 @@
-﻿# 📚 For Clock Documentation Index
+# For Clock 文档索引
 
-Welcome to the For Clock documentation! This index will help you find the right documentation for your needs.
+本索引对应 `yuhan` 分支和当前 Capacitor 8 版本。
 
----
+## 快速导航
 
-## 🚀 Getting Started
+### 我想运行项目
 
-### For Users
-If you want to **use** For Clock, start here:
-
-1. **[README.md](README.md)** - Main documentation
-   - Features overview
-   - Quick start guide
-   - Usage instructions
-   - Gesture control guide
-   - Basic configuration
-
-2. **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Project summary
-   - What is For Clock?
-   - Target audience
-   - Use cases
-   - Roadmap
-
-### For Developers
-If you want to **contribute** or **modify** For Clock:
-
-1. **[DEVELOPMENT.md](DEVELOPMENT.md)** - Developer guide
-   - Architecture overview
-   - Development setup
-   - Code structure
-   - Component documentation
-   - State management
-   - AI integration guide
-   - Particle system details
-   - Gesture recognition
-   - Mobile development
-   - Testing guide
-
-2. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
-   - Code of conduct
-   - How to contribute
-   - Development workflow
-   - Coding standards
-   - Commit guidelines
-   - Pull request process
-
-### For Deployers
-If you want to **deploy** For Clock:
-
-1. **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment guide
-   - Quick deployment (Vercel, Netlify)
-   - Static hosting
-   - VPS deployment
-   - Docker deployment
-   - Cloud platforms
-   - Production checklist
-   - Security considerations
-
----
-
-## 📖 Documentation Structure
-
-```
-docs/
-├── README.md                    # Main user documentation
-├── DEVELOPMENT.md               # Developer documentation
-├── DEPLOYMENT.md                # Deployment documentation
-├── CONTRIBUTING.md              # Contribution guidelines
-├── PROJECT_OVERVIEW.md          # Project summary
-└── docs/
-    └── INDEX.md                 # This file
-```
-
----
-
-## 🎯 Find What You Need
-
-### I want to...
-
-#### Install and Run For Clock
-→ See [README.md - Quick Start](README.md#-quick-start)
-
-#### Learn How to Use Features
-→ See [README.md - Usage Guide](README.md#-usage-guide)
-
-#### Understand the Code
-→ See [DEVELOPMENT.md - Code Structure](DEVELOPMENT.md#code-structure)
-
-#### Add a New Feature
-→ See [DEVELOPMENT.md - Core Components](DEVELOPMENT.md#core-components)
-
-#### Deploy to Production
-→ See [DEPLOYMENT.md](DEPLOYMENT.md)
-
-#### Contribute to the Project
-→ See [CONTRIBUTING.md](CONTRIBUTING.md)
-
-#### Report a Bug
-→ See [CONTRIBUTING.md - Issue Reporting](CONTRIBUTING.md#issue-reporting)
-
-#### Customize Appearance
-→ See [DEVELOPMENT.md - Configuration](DEVELOPMENT.md#configuration)
-
-#### Integrate New AI Provider
-→ See [DEVELOPMENT.md - AI Integration](DEVELOPMENT.md#ai-integration)
-
-#### Add Particle Effects
-→ See [DEVELOPMENT.md - Particle System](DEVELOPMENT.md#particle-system)
-
-#### Build Mobile Apps
-→ See [DEVELOPMENT.md - Mobile Development](DEVELOPMENT.md#mobile-development)
-
----
-
-## 📋 Document Summaries
-
-### [README.md](README.md)
-**Purpose**: Main documentation for end users  
-**Length**: ~500 lines  
-**Topics**:
-- Features
-- Installation
-- Usage guide
-- Gesture control
-- Development basics
-- Mobile apps
-- Bilingual (EN/CN)
-
-**Best for**:
-- First-time users
-- General reference
-- Quick start
-
-### [DEVELOPMENT.md](DEVELOPMENT.md)
-**Purpose**: Technical documentation for developers  
-**Length**: ~800 lines  
-**Topics**:
-- Architecture
-- Development setup
-- Code structure
-- Components
-- State management
-- AI integration
-- Particle system
-- Gesture recognition
-- Mobile development
-- Testing
-- Troubleshooting
-
-**Best for**:
-- Contributors
-- Developers
-- Code maintainers
-
-### [DEPLOYMENT.md](DEPLOYMENT.md)
-**Purpose**: Deployment instructions  
-**Length**: ~600 lines  
-**Topics**:
-- Quick deploy options
-- Static hosting
-- VPS deployment
-- Docker
-- Cloud platforms
-- Production checklist
-- Performance optimization
-- Security
-
-**Best for**:
-- DevOps
-- System administrators
-- Production deployment
-
-### [CONTRIBUTING.md](CONTRIBUTING.md)
-**Purpose**: Guidelines for contributors  
-**Length**: ~400 lines  
-**Topics**:
-- Code of conduct
-- Getting started
-- How to contribute
-- Development workflow
-- Coding standards
-- Commit guidelines
-- PR process
-- Issue reporting
-
-**Best for**:
-- First-time contributors
-- Open source contributors
-- Community members
-
-### [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
-**Purpose**: High-level project summary  
-**Length**: ~300 lines  
-**Topics**:
-- Project vision
-- Key features
-- Architecture
-- Target audience
-- Use cases
-- Roadmap
-- Community
-
-**Best for**:
-- Understanding project goals
-- Quick reference
-- Presentations
-
----
-
-## 🔍 Quick Reference
-
-### Commands Cheat Sheet
+1. 阅读 [README](../README.md)
+2. 安装 Node.js 22+
+3. 执行：
 
 ```bash
-# Development
-npm run dev              # Start dev server
-npm run build            # Build for production
-npm run preview          # Preview build
-
-# Mobile
-npm run sync:ios         # Sync to iOS
-npm run sync:android     # Sync to Android
-npm run open:ios         # Open in Xcode
-npm run open:android     # Open in Android Studio
-
-# Deployment
-npm run deploy           # Deploy to GitHub Pages
+npm ci
+cp .env.local.example .env.local
+npm run dev
 ```
 
-### File Locations
+访问 <http://localhost:3000>。
 
+### 我想开发功能
+
+- [开发指南](../DEVELOPMENT.md)
+- [贡献指南](../CONTRIBUTING.md)
+- [项目概览](../PROJECT_OVERVIEW.md)
+
+### 我想部署
+
+- [完整部署指南](../DEPLOYMENT.md)
+- [iOS 开发指南](../IOS版开发文档.md)
+
+### 我想了解文档状态
+
+- [文档维护说明](../DOCUMENTATION_SUMMARY.md)
+
+## 命令速查
+
+```bash
+# Web
+npm run dev
+npm run build
+npm run preview
+npm run lint
+
+# Capacitor
+npm run build:cap
+npm run sync:android
+npm run sync:ios
+npm run open:android
+npm run open:ios
+
+# 资源
+npm run generate-icons
 ```
-src/
-├── components/          # UI components
-├── services/            # API integrations
-├── types.ts             # TypeScript types
-├── constants.ts         # Constants & configs
-└── App.tsx              # Main app
 
-public/
-└── mediapipe/           # ML models
+## 配置文件速查
 
-android/                 # Android project
-ios/                     # iOS project
-```
+| 文件 | 用途 |
+|---|---|
+| `package.json` | 依赖和 npm 脚本 |
+| `vite.config.ts` | 端口、PWA、构建和代码拆包 |
+| `capacitor.config.ts` | App ID、应用名和移动端 WebView 配置 |
+| `.env.local.example` | 可选 AI 环境变量模板 |
+| `eslint.config.js` | ESLint 配置 |
+| `tsconfig.json` | TypeScript 配置 |
+| `.github/workflows/` | Android/iOS 构建和发布工作流 |
 
-### Important Links
+## 当前发布规则
 
-- **GitHub Repo**: https://github.com/yourusername/zen-clock
-- **Issues**: https://github.com/yourusername/zen-clock/issues
-- **Discussions**: https://github.com/yourusername/zen-clock/discussions
+- `main` / `master`：自动发布标签 `latest-build`
+- `pro`：自动发布标签 `latest-build-pro`
+- `yuhan`：当前开发分支，可手动触发工作流
 
-### Technology Stack
+## 归档资料
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 19 | UI Framework |
-| TypeScript | 5.8 | Type Safety |
-| Tailwind CSS | 4.1 | Styling |
-| Vite | 6.2 | Build Tool |
-| MediaPipe | 0.10.14 | Hand Tracking |
-| Google Gemini | Latest | AI Model |
-| Capacitor | 8.0 | Mobile Apps |
+以下文件只记录过去的文档调整过程，不代表当前配置：
 
----
+- [移动端优先更新记录](MOBILE_FIRST_UPDATE.md)
+- [快速启动优化记录](QUICK_START_OPTIMIZATION.md)
 
-## 📞 Getting Help
-
-### Documentation Not Enough?
-
-1. **Check FAQs** in each document
-2. **Search Issues** on GitHub
-3. **Ask in Discussions** on GitHub
-4. **Contact Maintainers** via email
-
-### Common Questions
-
-**Q: How do I set up the AI feature?**  
-A: See [README.md - Environment Variables](README.md#environment-variables)
-
-**Q: Why isn't gesture control working?**  
-A: See [DEVELOPMENT.md - Troubleshooting](DEVELOPMENT.md#troubleshooting)
-
-**Q: How do I deploy to Vercel?**  
-A: See [DEPLOYMENT.md - Quick Deployment](DEPLOYMENT.md#quick-deployment-options)
-
-**Q: How do I add a new theme?**  
-A: See [DEVELOPMENT.md - Core Components](DEVELOPMENT.md#core-components)
-
-**Q: Can I use this commercially?**  
-A: Yes! See [LICENSE](LICENSE) for details.
-
----
-
-## 📊 Documentation Stats
-
-| Document | Lines | Words | Reading Time |
-|----------|-------|-------|--------------|
-| README.md | ~500 | ~3,000 | 10 min |
-| DEVELOPMENT.md | ~800 | ~6,000 | 20 min |
-| DEPLOYMENT.md | ~600 | ~4,500 | 15 min |
-| CONTRIBUTING.md | ~400 | ~3,000 | 10 min |
-| PROJECT_OVERVIEW.md | ~300 | ~2,000 | 7 min |
-
-**Total**: ~2,600 lines, ~18,500 words, ~62 minutes reading time
-
----
-
-## 🔄 Updates & Maintenance
-
-### Last Updated
-- All documents: March 2024
-
-### Version
-- Documentation Version: 1.0.0
-- Matches Project Version: 1.0.0
-
-### Contributing to Docs
-Found a typo? Want to improve documentation?
-
-1. Fork the repository
-2. Edit the documentation file
-3. Submit a pull request
-4. Reference this in your commit: `[docs]`
-
-Example: `docs(readme): improve installation instructions`
-
----
-
-## 📝 Notes
-
-### Documentation Conventions
-
-- **Bold**: Important terms, UI elements
-- `Code`: Commands, file names, code snippets
-- [Links](url): Internal and external references
-- Emoji: Section markers for visual navigation
-- Tables: Structured information
-- Code blocks: Copy-paste ready commands
-
-### Language Support
-
-- Primary: English
-- Secondary: Chinese (中文)
-- README.md is fully bilingual
-- Technical docs are in English for global accessibility
-
----
-
-## 🎯 Next Steps
-
-### For First-Time Users
-1. Read [README.md](README.md)
-2. Install and run locally
-3. Explore features
-4. Customize to your liking
-
-### For Developers
-1. Read [DEVELOPMENT.md](DEVELOPMENT.md)
-2. Set up development environment
-3. Explore codebase
-4. Pick an issue to work on
-
-### For Contributors
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Find an issue
-3. Create a branch
-4. Start coding!
-
-### For Deployers
-1. Read [DEPLOYMENT.md](DEPLOYMENT.md)
-2. Choose deployment target
-3. Follow step-by-step guide
-4. Deploy!
-
----
-
-**Happy Reading! 📖**
-
-*This index is maintained as part of the For Clock documentation. Last updated: March 2024.*
+发现冲突时，以源码、`package.json`、`vite.config.ts`、`capacitor.config.ts` 和核心文档为准。

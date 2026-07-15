@@ -1,264 +1,98 @@
-﻿# For Clock - Project Overview
+# For Clock 项目概览
 
-## 📋 Quick Facts
+## 项目定位
 
-| Category | Details |
-|----------|---------|
-| **Project Name** | For Clock (禅意时钟) |
-| **Type** | Web Application / Mobile App |
-| **Category** | Productivity, Wellness, Screensaver |
-| **License** | MIT License |
-| **Status** | Active Development |
-| **Version** | 1.0.0 |
+For Clock 是一个强调沉浸感与自由布局的多组件时钟应用。它以 Web/PWA 为核心，通过 Capacitor 同步到 Android 和 iOS。
 
-## 🎯 Project Vision
+当前开发分支为 `yuhan`，移动端应用配置名称为 `For Clock Pro`，应用标识为 `com.zenclock.app.pro`。
 
-For Clock is more than just a clock—it's a mindfulness tool that combines aesthetic design, AI-powered reflections, and interactive particle effects to create a calming digital environment. The project aims to help users find moments of zen in their busy digital lives.
+## 当前能力
 
-## ✨ Key Features
+### 组件系统
 
-### Core Functionality
-1. **Multiple Clock Modes**
-   - Digital with flip animation
-   - Analog with smooth sweep
-   - Dual mode (both simultaneously)
+- 数字时钟：多种数字切换动画，可选日期和秒显示
+- 模拟时钟：多种表盘风格，包括罗马数字样式
+- 日历：多种日期展示样式，包括邮票风格
+- 计时器：秒表和倒计时模式，支持多个实例
+- 自由布局：拖动、缩放、旋转、层级和独立透明度
 
-2. **Visual Themes**
-   - 5 carefully crafted themes
-   - From minimalist to cyberpunk
-   - Customizable colors and fonts
+### 视觉与交互
 
-3. **Particle Effects**
-   - 4 interactive particle systems
-   - Mouse and gesture interaction
-   - Real-time physics simulation
+- 五套内置主题
+- Snow、Rain、Stars、Matrix 粒子效果
+- 自定义背景图片
+- 桌面鼠标、触摸和移动端布局支持
+- MediaPipe 摄像头手势识别
 
-4. **AI Integration**
-   - Google Gemini powered time reflections
-   - Bilingual output (English + Chinese)
-   - Support for custom AI providers
+### 智能内容
 
-5. **Gesture Control**
-   - MediaPipe hand tracking
-   - Different interactions per particle mode
-   - No touch required
+- Google Gemini
+- OpenAI 兼容接口
+- 无 API Key 时使用本地双语语句池
 
-6. **Cross-Platform**
-   - Web browser (primary)
-   - iOS app (via Capacitor)
-   - Android app (via Capacitor)
+### 平台能力
 
-## 🏗️ Architecture
+- Vite Web 应用
+- PWA manifest、Service Worker 和离线缓存
+- Capacitor 8 Android 工程
+- Capacitor 8 iOS 工程（Swift Package Manager）
+- GitHub Actions Android/iOS 自动构建与 Release
 
-### Technology Stack
+## 技术架构
 
-**Frontend:**
-- React 19 (UI Framework)
-- TypeScript (Type Safety)
-- Tailwind CSS v4 (Styling)
-- Vite 6 (Build Tool)
+| 范畴 | 当前实现 |
+|---|---|
+| 前端 | React 19.2、TypeScript 5.8 |
+| 构建 | Vite 6.4 |
+| 样式 | Tailwind CSS 4.1 |
+| PWA | vite-plugin-pwa 1.3 |
+| 手势 | MediaPipe Tasks Vision 0.10.14 |
+| AI | Google Gen AI SDK 1.34、OpenAI 兼容 API |
+| 移动端 | Capacitor 8 |
+| 图标 | Lucide React |
 
-**AI & Vision:**
-- Google Gemini API (Language Model)
-- MediaPipe Tasks Vision (Hand Tracking)
+## 设计原则
 
-**Mobile:**
-- Capacitor 8 (Native Wrapper)
-- iOS & Android Support
+1. **沉浸优先**：默认界面减少干扰，控制面板按需出现。
+2. **组件独立**：每个时钟、日历和计时器拥有独立布局及样式配置。
+3. **本地优先**：布局和偏好保存在本地，AI 功能没有 Key 也能工作。
+4. **跨平台一致**：Web 是单一 UI 源，移动端通过 Capacitor 复用。
+5. **渐进增强**：PWA、摄像头手势和在线 AI 均为增强能力，不阻塞基础时钟功能。
 
-**Development:**
-- Hot Module Replacement (HMR)
-- TypeScript Strict Mode
-- ESLint + Prettier
+## 关键文件
 
-### Project Structure
+| 文件 | 职责 |
+|---|---|
+| `App.tsx` | 应用组合、组件渲染和主要交互入口 |
+| `types.ts` | 全局数据模型 |
+| `constants.ts` | 主题、颜色和字体配置 |
+| `hooks/useWidgets.ts` | 组件实例、布局与计时器状态 |
+| `hooks/useSettings.ts` | 偏好设置持久化 |
+| `hooks/widgetPresets.ts` | 组件样式预设 |
+| `components/ParticlesCanvas.tsx` | 粒子与手势识别 |
+| `services/geminiService.ts` | AI 服务适配 |
+| `vite.config.ts` | 开发服务、构建拆包和 PWA |
+| `capacitor.config.ts` | Android/iOS 容器配置 |
 
-```
-zen-clock/
-├── src/
-│   ├── components/      # React components
-│   ├── services/        # AI integration
-│   ├── types.ts         # TypeScript types
-│   ├── constants.ts     # Configurations
-│   └── App.tsx          # Main component
-├── public/              # Static assets
-├── android/             # Android project
-├── ios/                 # iOS project
-└── docs/                # Documentation
-```
+## 构建与发布
 
-## 📊 Target Audience
+- 本地开发：`npm run dev`，端口 `3000`
+- Web 生产构建：`npm run build`
+- 移动端同步：`npm run build:cap`
+- CI Node.js：22
+- Android CI：Java 21、Debug APK
+- iOS CI：未签名 IPA
 
-### Primary Users
-- **Desktop Users**: Looking for beautiful screensaver
-- **Office Workers**: Want ambient, professional clock display
-- **Mindfulness Practitioners**: Seek moments of reflection
-- **Design Enthusiasts**: Appreciate aesthetic interfaces
+自动发布工作流监听 `main`、`master` 和 `pro`。当前 `yuhan` 分支可手动运行工作流，或合并到发布分支后自动触发。
 
-### Secondary Users
-- **Developers**: Learning React/TypeScript
-- **Students**: Studying computer vision (MediaPipe)
-- **Researchers**: Exploring AI integration patterns
+## 近期维护重点
 
-## 🚀 Use Cases
+- 保持组件布局和持久化数据向后兼容
+- 提升移动端触摸操作和不同屏幕尺寸体验
+- 优化 PWA 缓存更新和 MediaPipe 资源加载
+- 降低大型可选依赖对首屏包体的影响
+- 保持 README、开发文档和工作流配置同步
 
-### Personal Use
-1. **Desktop Screensaver**: Replace boring default screensaver
-2. **Focus Timer**: Use during work sessions (Pomodoro)
-3. **Meditation Aid**: Calming visuals for mindfulness
-4. **Ambient Display**: Always-on clock for second monitor
+## License
 
-### Professional Use
-1. **Office Lobby**: Professional time display
-2. **Meeting Rooms**: Elegant clock for video backgrounds
-3. **Co-working Spaces**: Ambient timekeeping
-4. **Cafes/Restaurants**: Stylish customer-facing display
-
-### Educational Use
-1. **Learning React**: Study modern React patterns
-2. **TypeScript Practice**: Explore type systems
-3. **Canvas Animation**: Learn particle systems
-4. **AI Integration**: Understand API integration
-
-## 📈 Roadmap
-
-### Version 1.0 (Current)
-- ✅ Digital, Analog, Dual clock modes
-- ✅ 5 visual themes
-- ✅ 4 particle effects
-- ✅ AI time reflections
-- ✅ Gesture control
-- ✅ Mobile apps (iOS/Android)
-
-### Version 1.1 (Planned)
-- [ ] Additional themes (8-10 total)
-- [ ] More particle effects
-- [ ] Custom theme creator
-- [ ] Widget mode
-- [ ] Improved gesture recognition
-
-### Version 2.0 (Future)
-- [ ] Multi-language support (beyond EN/CN)
-- [ ] Voice control integration
-- [ ] Smart home integration
-- [ ] Collaborative mode
-- [ ] AR support
-
-### Future Considerations
-- [ ] Desktop app (Electron)
-- [ ] Browser extension
-- [ ] Smart TV app
-- [ ] Wearable support
-- [ ] Offline AI mode
-
-## 🎓 Learning Resources
-
-This project demonstrates:
-- Modern React patterns (Hooks, Context)
-- TypeScript best practices
-- Canvas animation techniques
-- Computer vision integration
-- Cross-platform mobile development
-- AI API integration
-- Performance optimization
-
-## 🤝 Community & Contribution
-
-### How to Help
-- **Report Bugs**: Open GitHub issue
-- **Suggest Features**: Use feature request template
-- **Improve Docs**: Fix typos, add examples
-- **Add Translations**: Help localize the app
-- **Share Ideas**: Join discussions
-
-### Contribution Areas
-- UI/UX improvements
-- Performance optimization
-- New particle effects
-- Additional themes
-- Test coverage
-- Documentation
-
-## 📞 Contact & Support
-
-### Communication Channels
-- **GitHub Issues**: Bug reports, feature requests
-- **GitHub Discussions**: Questions, ideas
-- **Email**: Direct contact for business inquiries
-
-### Response Time
-- Issues: 1-3 business days
-- Discussions: 1-5 business days
-- Email: 3-7 business days
-
-## 📄 Legal & Licensing
-
-### License
-- **MIT License**: Free to use, modify, distribute
-- **Attribution**: Appreciated but not required
-- **Commercial Use**: Allowed
-
-### Third-Party Dependencies
-- React (MIT)
-- TypeScript (Apache 2.0)
-- Tailwind CSS (MIT)
-- MediaPipe (Apache 2.0)
-- Google Gemini (Google TOS)
-
-### Privacy
-- No user data collection
-- No analytics by default
-- Camera access only for gestures (optional)
-- API keys stored locally only
-
-## 🏆 Recognition & Credits
-
-### Created By
-- Original concept and development by For Clock Team
-
-### Special Thanks
-- Google Gemini AI team
-- MediaPipe team
-- React community
-- TypeScript community
-- All contributors
-
-## 📊 Project Stats (as of 2024)
-
-- **Lines of Code**: ~3,000+
-- **Components**: 10+
-- **Themes**: 5
-- **Particle Modes**: 4
-- **Supported Languages**: 2 (EN, CN)
-- **Supported Platforms**: 3 (Web, iOS, Android)
-
----
-
-## 🎯 Quick Start for Developers
-
-```bash
-# Clone
-git clone https://github.com/yourusername/zen-clock.git
-
-# Install
-cd zen-clock
-npm install
-
-# Run
-npm run dev
-
-# Build
-npm run build
-```
-
-For detailed instructions, see:
-- [README.md](README.md) - User guide
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Developer guide
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide
-
----
-
-**Last Updated**: March 2024
-
-**Project Status**: Active Development ✅
+MIT License。详见 [LICENSE](LICENSE)。
