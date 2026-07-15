@@ -1,626 +1,181 @@
-﻿# For Clock Deployment Guide
+# For Clock 部署指南
 
-This guide covers various deployment options for For Clock, from simple static hosting to production deployments.
+本文档覆盖 Web/PWA、Android 和 iOS。当前技术基线为 Node.js 22+、Vite 6、React 19 和 Capacitor 8。
 
----
-
-## Table of Contents
-
-1. [Quick Deployment Options](#quick-deployment-options)
-2. [Static Hosting](#static-hosting)
-3. [VPS Deployment](#vps-deployment)
-4. [Docker Deployment](#docker-deployment)
-5. [Cloud Platform Deployment](#cloud-platform-deployment)
-6. [Production Checklist](#production-checklist)
-7. [Performance Optimization](#performance-optimization)
-8. [Security Considerations](#security-considerations)
-
----
-
-## Quick Deployment Options
-
-### Option 1: Vercel (Recommended for beginners)
-
-**Time**: 5 minutes  
-**Cost**: Free tier available
+## 1. 生产构建
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Follow the prompts
-# That's it!
-```
-
-**Pros:**
-- Zero configuration
-- Automatic HTTPS
-- Global CDN
-- Preview deployments
-
-**Cons:**
-- Serverless function limits on free tier
-
-### Option 2: Netlify
-
-**Time**: 5 minutes  
-**Cost**: Free tier available
-
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Build
+npm ci
+cp .env.local.example .env.local
 npm run build
-
-# Deploy
-netlify deploy --prod --dir=dist
 ```
 
-**Pros:**
-- Simple deployment
-- Form handling
-- Built-in analytics
-- Easy rollbacks
-
-### Option 3: GitHub Pages
-
-**Time**: 10 minutes  
-**Cost**: Free
-
-1. Install `gh-pages`:
-```bash
-npm install --save-dev gh-pages
-```
-
-2. Add to `package.json`:
-```json
-{
-  "scripts": {
-    "deploy": "npm run build && gh-pages -d dist"
-  },
-  "homepage": "https://yourusername.github.io/zen-clock"
-}
-```
-
-3. Update `vite.config.ts`:
-```typescript
-export default defineConfig({
-  base: '/zen-clock/',
-  // ... rest of config
-});
-```
-
-4. Deploy:
-```bash
-npm run deploy
-```
-
----
-
-## Static Hosting
-
-### Building for Production
+输出目录为 `dist/`。部署前可本地预览：
 
 ```bash
-# Build the application
-npm run build
-
-# Output will be in the 'dist' folder
-# This contains all static assets needed
+npm run preview -- --host 127.0.0.1
 ```
 
-### Hosting Options
+## 2. 环境变量与安全
 
-| Provider | Free Tier | Features | Best For |
-|----------|-----------|----------|----------|
-| **Vercel** | ✅ Yes | CDN, SSL, Functions | Most projects |
-| **Netlify** | ✅ Yes | CDN, SSL, Forms | Static sites |
-| **GitHub Pages** | ✅ Yes | CDN, SSL | Open source |
-| **Cloudflare Pages** | ✅ Yes | CDN, SSL, Workers | Global reach |
-| **Firebase Hosting** | ✅ Yes | CDN, SSL, DB | Firebase users |
+可选变量：
 
-### Configuration Examples
-
-#### Vercel (vercel.json)
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "routes": [
-    {
-      "src": "/[^.]+",
-      "dest": "/",
-      "status": 200
-    }
-  ]
-}
+```dotenv
+GEMINI_API_KEY=
 ```
 
-#### Netlify (netlify.toml)
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
+Vite 会把该值注入浏览器构建产物，因此它不是服务器端秘密。公开部署时建议：
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-```
+- 不在构建环境中写入私人 API Key
+- 让用户在应用内自行配置密钥
+- 或通过自建后端代理 AI 请求，并在代理端实施鉴权、限流和密钥保护
 
----
+## 3. Web/PWA 部署
 
-## VPS Deployment
+`dist/` 是静态站点，可部署到任意静态托管平台。
 
-### Prerequisites
+### 必需配置
 
-- Ubuntu/Debian server
-- Node.js installed
-- Nginx installed
-- Domain name (optional)
+- 将站点根目录指向 `dist/`
+- 为单页应用配置回退到 `index.html`
+- 使用 HTTPS，以便 Service Worker 和摄像头功能正常工作
+- 正确返回 `.wasm`、`.task`、`.webmanifest` 文件
 
-### Step-by-Step Setup
-
-#### 1. Install Dependencies
-
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install Nginx
-sudo apt install -y nginx
-```
-
-#### 2. Build and Upload
-
-```bash
-# Build locally
-npm run build
-
-# Upload to server using SCP
-scp -r dist/* user@your-server:/var/www/zen-clock
-```
-
-#### 3. Configure Nginx
-
-Create `/etc/nginx/sites-available/zen-clock`:
+### Nginx 示例
 
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com;
-    root /var/www/zen-clock;
+    server_name clock.example.com;
+    root /var/www/forclock/dist;
     index index.html;
 
-    # Gzip compression
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # SPA routing
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-}
-```
-
-#### 4. Enable and Restart
-
-```bash
-# Enable site
-sudo ln -s /etc/nginx/sites-available/zen-clock /etc/nginx/sites-enabled/
-
-# Test configuration
-sudo nginx -t
-
-# Restart Nginx
-sudo systemctl restart nginx
-```
-
-#### 5. Setup SSL (Let's Encrypt)
-
-```bash
-# Install Certbot
-sudo apt install -y certbot python3-certbot-nginx
-
-# Get certificate
-sudo certbot --nginx -d your-domain.com
-
-# Auto-renewal is configured automatically
-```
-
----
-
-## Docker Deployment
-
-### Dockerfile
-
-Create `Dockerfile` in project root:
-
-```dockerfile
-# Build stage
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build application
-RUN npm run build
-
-# Production stage
-FROM nginx:alpine
-
-# Copy built assets
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-### nginx.conf
-
-```nginx
-server {
-    listen 80;
-    server_name localhost;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    # Gzip
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript;
-
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
-        expires 1y;
+    location ~* \.(js|css|png|svg|webp|ico|wasm|task)$ {
+        expires 30d;
         add_header Cache-Control "public, immutable";
-    }
-
-    # SPA routing
-    location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri =404;
     }
 }
 ```
 
-### Build and Run
+HTML 和 Service Worker 不应设置过长的不可变缓存，否则 PWA 更新可能延迟。
+
+### 常见平台
+
+- GitHub Pages：需要确认站点基础路径；当前 Vite 配置默认部署在域名根路径 `/`
+- Netlify / Vercel：构建命令 `npm run build`，输出目录 `dist`
+- Cloudflare Pages：构建命令 `npm run build`，输出目录 `dist`
+- 自建服务器：上传 `dist/` 并配置 SPA 回退与 HTTPS
+
+## 4. Android 构建
+
+### 环境
+
+- Node.js 22+
+- Java 21
+- Android Studio 和 Android SDK
+
+### 同步并打开工程
 
 ```bash
-# Build Docker image
-docker build -t zen-clock .
-
-# Run container
-docker run -d -p 80:80 zen-clock
-
-# Or use docker-compose
-docker-compose up -d
+npm ci
+npm run build:cap
+npm run open:android
 ```
 
-### Docker Compose
-
-Create `docker-compose.yml`:
-
-```yaml
-version: '3.8'
-
-services:
-  zen-clock:
-    build: .
-    ports:
-      - "80:80"
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-```
-
----
-
-## Cloud Platform Deployment
-
-### AWS S3 + CloudFront
-
-#### 1. Build
-```bash
-npm run build
-```
-
-#### 2. Create S3 Bucket
-```bash
-aws s3 mb s3://zen-clock-bucket
-```
-
-#### 3. Upload Files
-```bash
-aws s3 sync dist/ s3://zen-clock-bucket
-```
-
-#### 4. Configure Static Website
-```bash
-aws s3 website s3://zen-clock-bucket \
-  --index-document index.html \
-  --error-document index.html
-```
-
-#### 5. Create CloudFront Distribution
-- Use S3 bucket as origin
-- Configure custom domain
-- Enable HTTPS
-
-### Google Cloud Storage
+### 命令行构建 Debug APK
 
 ```bash
-# Create bucket
-gsutil mb gs://zen-clock-bucket
-
-# Upload files
-gsutil -m cp -r dist/* gs://zen-clock-bucket
-
-# Make public
-gsutil iam ch allUsers:objectViewer gs://zen-clock-bucket
-
-# Configure website
-gsutil web set -m index.html -e 404.html gs://zen-clock-bucket
+cd android
+./gradlew assembleDebug
 ```
 
-### Azure Static Web Apps
+输出：`android/app/build/outputs/apk/debug/app-debug.apk`。
+
+正式发布需要在 Android Studio 或 Gradle 中配置自己的签名密钥，构建 signed AAB/APK，并自行保护 keystore 与密码。
+
+## 5. iOS 构建
+
+### 环境
+
+- macOS
+- Xcode
+- Node.js 22+
+- 有效 Apple Developer 签名配置（真机/App Store 发布时）
+
+项目使用 Swift Package Manager，不需要 CocoaPods。
 
 ```bash
-# Install Azure CLI
-npm install -g @azure/static-web-apps-cli
-
-# Build
-npm run build
-
-# Deploy
-swa deploy ./dist
+npm ci
+npm run build:cap
+npm run open:ios
 ```
 
----
+在 Xcode 中：
 
-## Production Checklist
+1. 选择 `App` scheme
+2. 配置 Team、Bundle Identifier 和签名
+3. 选择设备运行，或执行 Product → Archive
+4. 通过 Organizer 导出并上传
 
-### Pre-Deployment
+CI 生成的是未签名 IPA，只能在后续自行签名后安装。
 
-- [ ] Run full test suite
-- [ ] Check all features work in production build
-- [ ] Test on multiple browsers (Chrome, Firefox, Safari, Edge)
-- [ ] Test on mobile devices
-- [ ] Verify API keys are not exposed in client code
-- [ ] Enable API key restrictions in Google Cloud Console
-- [ ] Set up error tracking (Sentry, LogRocket)
-- [ ] Configure analytics (Google Analytics, Plausible)
-- [ ] Test performance (Lighthouse score > 90)
-- [ ] Check accessibility (WCAG 2.1 AA)
+## 6. GitHub Actions
 
-### Security
+当前工作流：
 
-- [ ] Enable HTTPS
-- [ ] Configure security headers
-- [ ] Set up CORS properly
-- [ ] Implement rate limiting for AI endpoints
-- [ ] Use environment variables for secrets
-- [ ] Enable Content Security Policy (CSP)
-- [ ] Set up DDoS protection
+| 文件 | 触发方式 | 产物 |
+|---|---|---|
+| `.github/workflows/build-and-release.yml` | 推送 `main`、`master`、`pro` 或手动触发 | Android APK、未签名 iOS IPA、GitHub Release |
+| `.github/workflows/build-android.yml` | 手动触发 | Debug APK Artifact |
+| `.github/workflows/build-ios.yml` | 手动触发 | 未签名 IPA Artifact |
 
-### Performance
+自动发布标签规则：
 
-- [ ] Enable gzip/brotli compression
-- [ ] Configure CDN
-- [ ] Set up browser caching
-- [ ] Minimize bundle size
-- [ ] Lazy load components
-- [ ] Optimize images
-- [ ] Use service workers (optional)
+- `main` / `master` → `latest-build`
+- 其他监听分支（当前为 `pro`）→ `latest-build-<branch>`
 
-### Monitoring
+`yuhan` 当前不在自动 push 触发列表中，但可以在 Actions 页面手动运行工作流。
 
-- [ ] Set up uptime monitoring
-- [ ] Configure error alerts
-- [ ] Track key metrics (page load, errors)
-- [ ] Set up log aggregation
-- [ ] Create dashboard
+## 7. 发布检查清单
 
----
+- `npm ci` 成功
+- `npm run lint` 通过或已确认现有警告
+- `npm run build` 退出码为 0
+- 在目标浏览器验证数字钟、模拟钟、日历、计时器和设置面板
+- 验证 PWA manifest、图标和 Service Worker 更新
+- 通过 HTTPS 验证摄像头权限和 MediaPipe 模型加载
+- Android/iOS 重新执行 `npm run build:cap`
+- 未将 `.env.local`、签名文件、证书或私人密钥提交到 Git
 
-## Performance Optimization
+## 8. 故障排查
 
-### Bundle Optimization
+### 页面空白
 
-```typescript
-// vite.config.ts
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          mediapipe: ['@mediapipe/tasks-vision'],
-          ui: ['lucide-react']
-        }
-      }
-    }
-  }
-});
-```
+- 查看浏览器控制台和网络请求
+- 确认服务器支持 SPA 回退
+- 确认静态资源路径未被错误添加子目录前缀
 
-### Lazy Loading
+### PWA 未更新
 
-```typescript
-// Lazy load heavy components
-const ParticlesCanvas = lazy(() => import('./components/ParticlesCanvas'));
-const AnalogClock = lazy(() => import('./components/AnalogClock'));
+- 关闭旧标签页后重新打开
+- 清除站点 Service Worker 与缓存
+- 检查 `sw.js` 和 `workbox-*.js` 是否被代理缓存
 
-// Use in component
-<Suspense fallback={<Loading />}>
-  <ParticlesCanvas />
-</Suspense>
-```
+### 摄像头不可用
 
-### Image Optimization
+- Web 部署必须使用 HTTPS 或 localhost
+- 检查系统与浏览器摄像头权限
+- 检查 `public/mediapipe/` 资源是否完整发布
+
+### Capacitor 内容未更新
+
+重新执行：
 
 ```bash
-# Install sharp for image optimization
-npm install --save-dev sharp
-
-# Use in build process
+npm run build:cap
 ```
-
-### Caching Strategy
-
-```javascript
-// Service Worker for caching
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});
-```
-
----
-
-## Security Considerations
-
-### API Key Protection
-
-**Never expose API keys in client-side code!**
-
-#### Recommended Approach: Backend Proxy
-
-```typescript
-// Backend endpoint (Node.js/Express example)
-app.post('/api/generate-reflection', async (req, res) => {
-  const { timeString, theme } = req.body;
-  
-  // Rate limiting
-  if (rateLimiter.isLimited(req.ip)) {
-    return res.status(429).json({ error: 'Too many requests' });
-  }
-  
-  // Call AI service from server
-  const result = await generateReflection(timeString, theme);
-  res.json({ result });
-});
-```
-
-#### Environment Variables
-
-```bash
-# .env.production (never commit this!)
-GEMINI_API_KEY=your_secret_key
-RATE_LIMIT_MAX_REQUESTS=100
-```
-
-### Security Headers
-
-Add to Nginx config:
-
-```nginx
-# Security headers
-add_header X-Frame-Options "SAMEORIGIN" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header X-XSS-Protection "1; mode=block" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';" always;
-```
-
-### Rate Limiting
-
-Implement rate limiting for AI features:
-
-```typescript
-// Simple rate limiter
-const rateLimitMap = new Map();
-
-const rateLimiter = {
-  isLimited: (ip: string): boolean => {
-    const now = Date.now();
-    const windowMs = 60000; // 1 minute
-    const maxRequests = 10;
-    
-    const requests = rateLimitMap.get(ip) || [];
-    const recentRequests = requests.filter((time: number) => now - time < windowMs);
-    
-    if (recentRequests.length >= maxRequests) {
-      return true;
-    }
-    
-    recentRequests.push(now);
-    rateLimitMap.set(ip, recentRequests);
-    return false;
-  }
-};
-```
-
----
-
-## Troubleshooting
-
-### Common Deployment Issues
-
-#### 1. 404 on Page Refresh
-
-**Problem**: SPA routing issue  
-**Solution**: Configure server to redirect all routes to index.html
-
-#### 2. Assets Not Loading
-
-**Problem**: Incorrect base path  
-**Solution**: Set correct `base` in vite.config.ts
-
-#### 3. CORS Errors
-
-**Problem**: API requests blocked  
-**Solution**: Configure CORS on server or use proxy
-
-#### 4. Slow Performance
-
-**Problem**: Large bundle size  
-**Solution**: Enable code splitting, lazy loading, compression
-
----
-
-## Support
-
-For deployment issues:
-- Check [GitHub Issues](https://github.com/yourusername/zen-clock/issues)
-- Read [Development Guide](DEVELOPMENT.md)
-- Contact maintainers
-
----
-
-**Happy Deploying! 🚀**

@@ -1,439 +1,107 @@
-﻿# Contributing to For Clock
+# 贡献指南
 
-Thank you for your interest in contributing to For Clock! This document provides guidelines and instructions for contributing.
+感谢参与 For Clock。本文档对应当前 `yuhan` 开发分支。
 
-## Table of Contents
+## 开始之前
 
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [How to Contribute](#how-to-contribute)
-- [Development Workflow](#development-workflow)
-- [Coding Standards](#coding-standards)
-- [Commit Guidelines](#commit-guidelines)
-- [Pull Request Process](#pull-request-process)
-- [Issue Reporting](#issue-reporting)
+- 使用 Node.js 22+
+- 阅读 [README.md](README.md) 和 [DEVELOPMENT.md](DEVELOPMENT.md)
+- 搜索现有 Issue 或讨论，避免重复工作
+- 不要提交 API Key、签名文件、证书或用户数据
 
----
-
-## Code of Conduct
-
-### Our Pledge
-
-We pledge to make participation in For Clock a harassment-free experience for everyone. We welcome contributors of all backgrounds and skill levels.
-
-### Our Standards
-
-Examples of behavior that contributes to a positive environment:
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the community
-
-Examples of unacceptable behavior:
-- The use of sexualized language or imagery
-- Trolling, insulting/derogatory comments
-- Public or private harassment
-- Publishing others' private information without permission
-
----
-
-## Getting Started
-
-### Prerequisites
-
-Before contributing, ensure you have:
-- Node.js v18+ installed
-- Basic knowledge of React and TypeScript
-- Git installed and configured
-- A GitHub account
-
-### Setup Development Environment
+## 本地开发
 
 ```bash
-# Fork the repository
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/zen-clock.git
-cd zen-clock
-
-# Install dependencies
-npm install
-
-# Create a branch for your work
-git checkout -b feature/your-feature-name
-```
-
----
-
-## How to Contribute
-
-### Types of Contributions We Welcome
-
-1. **Bug Fixes**: Fix reported issues or bugs you discover
-2. **New Features**: Add new functionality (please discuss first)
-3. **Documentation**: Improve README, add comments, create tutorials
-4. **Performance Improvements**: Optimize existing code
-5. **UI/UX Improvements**: Enhance visual design or user experience
-6. **Tests**: Add or improve test coverage
-7. **Translations**: Translate documentation or UI text
-
-### Not Sure Where to Start?
-
-- Look for issues labeled `good first issue` or `help wanted`
-- Check the [Project Roadmap](#roadmap)
-- Improve documentation
-- Fix typos or clarify confusing text
-
----
-
-## Development Workflow
-
-### 1. Create a Branch
-
-```bash
-# Feature branch
-git checkout -b feature/add-new-particle-effect
-
-# Bug fix branch
-git checkout -b fix/camera-permission-issue
-
-# Documentation branch
-git checkout -b docs/update-readme
-```
-
-### 2. Make Changes
-
-Follow the coding standards and make focused, atomic commits.
-
-### 3. Test Your Changes
-
-```bash
-# Run development server
+git clone --branch yuhan --single-branch https://github.com/cha3343954211/ForClock.git
+cd ForClock
+npm ci
+cp .env.local.example .env.local
 npm run dev
+```
 
-# Build for production
+## 分支命名
+
+从 `yuhan` 创建短期分支：
+
+```bash
+git checkout yuhan
+git pull origin yuhan
+git checkout -b feature/widget-name
+```
+
+推荐前缀：
+
+- `feature/`：新功能
+- `fix/`：缺陷修复
+- `docs/`：文档更新
+- `refactor/`：无行为变化的重构
+- `chore/`：工具链或维护工作
+
+## 开发原则
+
+- 保持修改聚焦，不顺带重构无关代码
+- 优先解决根因，避免仅覆盖症状
+- 保持现有 React、TypeScript 和 Tailwind 风格
+- 复用现有上下文、hooks、主题和预设系统
+- 兼顾桌面、移动端、触摸和不同主题
+- 修改持久化数据时兼容已有 `localStorage` 数据
+- 修改 Web 代码后重新同步 Capacitor 工程
+
+## 提交前检查
+
+```bash
+npm run lint
 npm run build
-
-# Test on different browsers if possible
 ```
 
-### 4. Commit Your Changes
-
-Follow the commit message guidelines (see below).
-
-### 5. Push to Your Fork
+如修改移动端相关逻辑：
 
 ```bash
-git push origin feature/your-feature-name
+npm run build:cap
 ```
 
-### 6. Create a Pull Request
+至少手动验证：
 
-Open a PR on GitHub with a clear description of your changes.
+- 数字钟、模拟钟、日历和计时器可添加与配置
+- 拖动、缩放、旋转和默认布局复位正常
+- 深色与浅色主题可读
+- AI 无 Key 时能回退到本地语句
+- 摄像头权限被拒绝时应用不会崩溃
+- 浏览器控制台没有新增错误
 
----
+## 提交信息
 
-## Coding Standards
+建议使用 Conventional Commits：
 
-### TypeScript
-
-- Use TypeScript for all new code
-- Define proper types, avoid `any`
-- Use interfaces for object shapes
-- Export types from `types.ts` when reusable
-
-```typescript
-// Good
-interface ParticleConfig {
-  x: number;
-  y: number;
-  speed: number;
-}
-
-// Avoid
-interface ParticleConfig {
-  x: any;
-  y: any;
-}
+```text
+feat(clock): add roman dial variant
+fix(timer): preserve countdown after reload
+docs(readme): update local setup instructions
+refactor(widgets): simplify layout presets
 ```
 
-### React Components
+常用类型：`feat`、`fix`、`docs`、`refactor`、`test`、`chore`。
 
-- Use functional components with hooks
-- Keep components small and focused
-- Use descriptive component names
-- Add PropTypes or TypeScript types
+## Pull Request
 
-```typescript
-// Good
-interface DigitalClockProps {
-  time: TimeState;
-  theme: ThemeConfig;
-  showSeconds: boolean;
-}
+PR 描述应包括：
 
-const DigitalClock: React.FC<DigitalClockProps> = ({ time, theme, showSeconds }) => {
-  // Component logic
-};
+- 修改目的与实现概述
+- 影响的 Web/Android/iOS 平台
+- 验证命令和手动测试结果
+- UI 修改前后截图或录屏（如适用）
+- 配置、迁移或兼容性注意事项
 
-// Component implementation
-```
+避免在同一 PR 中混入无关格式化或大范围文件重排。
 
-### Styling
+## 文档维护
 
-- Use Tailwind CSS utility classes
-- Avoid inline styles
-- Use CSS modules for complex components if needed
-- Follow existing design patterns
+功能、脚本、端口、环境要求或发布流程发生变化时，同步更新：
 
-```tsx
-// Good
-<div className="flex items-center justify-center w-full h-screen bg-neutral-900">
-  Content
-</div>
+- `README.md`
+- `README_CN.md`
+- `DEVELOPMENT.md`
+- `DEPLOYMENT.md`
+- `docs/INDEX.md`
 
-// Avoid
-<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-  Content
-</div>
-```
-
-### Naming Conventions
-
-- **Files**: PascalCase for components, camelCase for utilities
-- **Components**: PascalCase (e.g., `DigitalClock`)
-- **Functions/Variables**: camelCase (e.g., `handleClick`, `timeState`)
-- **Constants**: UPPER_SNAKE_CASE (e.g., `THEME_CONFIGS`)
-- **Types/Interfaces**: PascalCase (e.g., `ClockMode`, `ThemeConfig`)
-
-### Comments and Documentation
-
-- Add JSDoc comments for complex functions
-- Comment "why" not "what"
-- Keep comments up-to-date
-- Document public APIs
-
-```typescript
-/**
- * Generates a poetic reflection about time using AI
- * @param timeString - Current time in format "HH:MM AM/PM"
- * @param themeLabel - Selected theme name
- * @param config - AI provider configuration
- * @returns Promise resolving to bilingual reflection text
- */
-export const generateTimeReflection = async (
-  timeString: string,
-  themeLabel: string,
-  config?: AIConfig
-): Promise<string> => {
-  // Implementation
-};
-```
-
----
-
-## Commit Guidelines
-
-### Commit Message Format
-
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-### Types
-
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding tests
-- `chore`: Build/config changes
-- `perf`: Performance improvements
-
-### Examples
-
-```bash
-# Feature
-feat(particles): add snowflake particle effect
-
-# Bug fix
-fix(camera): resolve hand detection issue on Safari
-
-# Documentation
-docs(readme): update installation instructions
-
-# Refactor
-refactor(ai): simplify provider selection logic
-
-# Multiple scopes
-feat(ui,particles): add settings for particle density
-```
-
-### Commit Best Practices
-
-- Keep commits atomic (one logical change)
-- Write clear, concise messages
-- Use imperative mood in subject line ("add" not "added")
-- Don't end subject line with period
-- Reference issues in footer when applicable
-
----
-
-## Pull Request Process
-
-### Before Submitting
-
-1. **Test thoroughly**
-   - Verify feature works as expected
-   - Test on multiple browsers
-   - Check mobile responsiveness
-
-2. **Update documentation**
-   - Update README if adding features
-   - Add inline comments for complex code
-   - Update DEVELOPMENT.md if needed
-
-3. **Clean up code**
-   - Remove console.log statements
-   - Remove unused imports
-   - Format code consistently
-
-### PR Template
-
-When creating a PR, please include:
-
-```markdown
-## Description
-Brief description of changes
-
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-
-## Testing
-- [ ] Tested locally
-- [ ] Tested on Chrome
-- [ ] Tested on Firefox
-- [ ] Tested on Safari
-- [ ] Tested on mobile
-
-## Screenshots (if applicable)
-Add screenshots of UI changes
-
-## Related Issues
-Closes #123
-```
-
-### Review Process
-
-1. Maintainers will review your PR
-2. Address any feedback or requested changes
-3. Once approved, PR will be merged
-4. Congratulations! 🎉
-
----
-
-## Issue Reporting
-
-### Before Reporting
-
-- Check if issue already exists
-- Search closed issues for solutions
-- Try basic troubleshooting steps
-
-### Good Issue Reports
-
-Include:
-- **Clear title**: Descriptive and specific
-- **Description**: What happened, what you expected
-- **Steps to reproduce**: Numbered list
-- **Environment**: OS, browser, Node version
-- **Screenshots**: If applicable
-- **Error messages**: From console
-
-### Issue Template
-
-```markdown
-**Describe the bug**
-Clear description of the issue
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '...'
-3. See error
-
-**Expected behavior**
-What you expected to happen
-
-**Screenshots**
-If applicable, add screenshots
-
-**Environment:**
-- OS: [e.g., Windows 11]
-- Browser: [e.g., Chrome 120]
-- Node: [e.g., v20.10.0]
-
-**Additional context**
-Any other relevant information
-```
-
----
-
-## Development Tips
-
-### Debugging
-
-- Use React DevTools for component inspection
-- Check browser console for errors
-- Use `console.trace()` for complex call stacks
-- Test in multiple browsers
-
-### Performance
-
-- Profile with Chrome DevTools
-- Monitor frame rates (target 60fps)
-- Minimize re-renders with React.memo
-- Lazy load heavy components
-
-### Testing Checklist
-
-Before submitting PR:
-- [ ] Feature works as intended
-- [ ] No console errors
-- [ ] Responsive on mobile
-- [ ] Works in multiple browsers
-- [ ] Documentation updated
-- [ ] Code follows style guide
-
----
-
-## Recognition
-
-Contributors are recognized in:
-- README.md Contributors section
-- Release notes
-- Project documentation
-
----
-
-## Questions?
-
-- Check existing [documentation](DEVELOPMENT.md)
-- Search [GitHub Issues](https://github.com/yourusername/zen-clock/issues)
-- Ask in discussions tab
-- Contact maintainers
-
----
-
-**Thank you for contributing to For Clock! 🙏**
-
-Your contributions help make this project better for everyone.
+历史记录型文档可保留原始内容，但应明确标注为归档资料。

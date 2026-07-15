@@ -1,102 +1,66 @@
-﻿# 禅意时钟屏保 (For Clock Screensaver) 使用说明
+# For Clock · 中文快速指南
 
-**For Clock** 是一款集美学、互动性与人工智能于一体的网页端时钟屏保应用。它不仅提供多种经典与现代的时钟显示模式，还融合了沉浸式的粒子特效、AI 生成的时间哲思，以及先进的摄像头手势控制功能。
+For Clock 是一个基于 React、Vite 和 Capacitor 的沉浸式多组件时钟应用。当前开发版本位于 `yuhan` 分支。
 
----
+## 快速启动
 
-## ✨ 核心功能
+环境要求：Node.js 22+、npm 10+。
 
-### 1. 多样化时钟模式
-*   **数字模式 (Digital)**: 支持经典的数字显示，并配备了**拟真翻页 (Flip)** 动画效果，还原复古机械质感。
-*   **指针模式 (Analog)**: 优雅的表盘设计，支持**平滑扫秒 (Smooth Sweep)** 模式，指针移动如丝般顺滑。
-*   **双重模式 (Dual)**: 同时展示指针时钟与迷你翻页时钟，满足不同的视觉偏好。
+```bash
+git clone --branch yuhan --single-branch https://github.com/cha3343954211/ForClock.git
+cd ForClock
+npm ci
+cp .env.local.example .env.local
+npm run dev
+```
 
-### 2. 丰富的主题风格
-*   **午夜虚空 (Midnight Void)**: 深邃的黑色极简风格。
-*   **纸白 (Paper White)**: 清新的白底黑字风格，类似电子墨水屏。
-*   **赛博朋克 (Cyberpunk Neon)**: 炫酷的霓虹光影，高对比度色彩。
-*   **迷雾森林 (Misty Forest)**: 带有背景图的自然风格。
-*   **复古终端 (Retro Terminal)**: 绿色的代码风格，致敬老式计算机。
+浏览器访问 <http://localhost:3000>。
 
-### 3. 沉浸式粒子特效
-支持多种背景粒子系统，且可与鼠标或手势互动：
-*   **无 (None)**: 纯净背景。
-*   **飞雪 (Snow)**: 飘落的雪花。
-*   **星空 (Stars)**: 缓慢漂浮的星辰，支持连线效果。
-*   **雨滴 (Rain)**: 倾盆大雨效果。
-*   **黑客帝国 (Matrix)**: 经典的绿色代码雨。
+## 核心功能
 
-### 4. AI 智慧哲思
-集成 Google Gemini AI，根据当前时间和所选主题，生成一句关于“时间”的短诗或哲理句，让每一次看时间都充满诗意。
+- 数字时钟、模拟时钟、日历、秒表和倒计时
+- 多组件自由拖拽、缩放、旋转和独立样式配置
+- 五套主题与 Snow、Rain、Stars、Matrix 粒子效果
+- MediaPipe 摄像头手势识别
+- Gemini / OpenAI 兼容 AI 服务与本地感悟语句池
+- PWA 离线缓存及 Android/iOS Capacitor 工程
 
-### 5. 高级定制
-*   **自定义配色**: 支持纯色或渐变色（如日落、海洋、极光等）。
-*   **自定义字体**: 提供现代无衬线、衬线、等宽字体等多种选择。
-*   **背景上传**: 支持上传本地图片作为屏保背景。
-*   **尺寸缩放**: 自由调整时钟大小。
+## AI 配置
 
----
+`GEMINI_API_KEY` 不是启动项目的必需项。需要在线生成 AI 感悟时，编辑 `.env.local`：
 
-## 🎮 操作指南
+```dotenv
+GEMINI_API_KEY=your_key
+```
 
-### 唤出控制面板
-鼠标移动到屏幕**正上方中央区域**（会出现一个白色提示条），点击即可唤出设置面板。点击面板外部阴影区域即可关闭。
+也可以在应用内的 `AI Settings` 中设置服务商、接口地址、模型和密钥。
 
-### 面板功能详解
-| 图标 | 功能描述 |
-| :--- | :--- |
-| **模式切换** | 在数字 (Type)、指针 (Clock)、双重 (Layout) 模式间切换。 |
-| **特效开关** | **翻页 (Flip)**: 开启/关闭数字翻页动画。<br>**平滑 (Smooth)**: 开启/关闭指针平滑扫秒。 |
-| **显示设置** | **秒针**: 显示/隐藏秒针。<br>**缩放**: 放大/缩小时钟主体。 |
-| **摄像头** | 开启/关闭手势识别功能（需允许浏览器使用摄像头）。 |
-| **全屏** | 进入/退出全屏沉浸模式。 |
-| **外观定制** | 选择预设颜色、字体，或上传自定义背景图。 |
-| **AI 按钮** | 点击 "Ask AI for Reflection" 获取当前时间的AI解读。 |
+## 常用命令
 
----
+```bash
+npm run dev          # 开发服务器：http://localhost:3000
+npm run build        # 生产构建
+npm run preview      # 预览生产构建
+npm run lint         # ESLint 检查
+npm run build:cap    # 构建并同步移动端工程
+npm run open:android # Android Studio
+npm run open:ios     # Xcode
+```
 
-## ✋ 手势控制说明 (需开启摄像头)
+## 移动端说明
 
-本应用通过 MediaPipe 技术识别手部动作，不同的粒子模式下有不同的互动效果。
+- Android：需要 Java 21、Android Studio 和 Android SDK
+- iOS：需要 macOS 和 Xcode，依赖由 Swift Package Manager 管理
+- Capacitor 8 要求 Node.js 22+
+- iOS 自动构建产物为未签名 IPA，需要自行签名后安装
 
-**通用规则：** 请将手掌正对摄像头，保持在画面中央。
+## 当前技术版本
 
-| 粒子模式 | ✊ 握拳 (Fist) | 🖐 张开手掌 (Open Hand) | 👆 食指指点 (Pointing) |
-| :--- | :--- | :--- | :--- |
-| **飞雪 / 星空** | **超级聚拢**: 粒子被强力吸附到拳头中心。 | **驱散**: 像风一样将周围的粒子推开。 | **轻微吸引**: 粒子缓慢向指尖聚集。 |
-| **雨滴 (Rain)** | **时间静止**: 雨滴悬停在半空，速度极慢。 | **雨伞模式**: 雨滴会避开手掌区域滑落。 | **风力操控**: 改变雨滴下落的轨迹方向。 |
-| **矩阵 (Matrix)** | **系统崩溃**: 代码变红并剧烈震动。 | **力场扭曲**: 产生空间扭曲力场，推开代码。 | **数据流**: 代码流随指尖方向移动。 |
+- React 19.2
+- TypeScript 5.8
+- Vite 6.4
+- Tailwind CSS 4.1
+- Capacitor 8
+- MediaPipe Tasks Vision 0.10
 
----
-
-## ⚙️ 安装与运行 (开发人员)
-
-如果您拥有源代码，请按以下步骤运行：
-
-1.  **环境准备**: 确保安装了 Node.js。
-2.  **安装依赖**:
-    ```bash
-    npm install
-    ```
-3.  **配置 API Key** (用于 AI 功能):
-    *   在根目录创建 `.env` 文件。
-    *   添加：`API_KEY=你的_Google_Gemini_API_Key`。
-    *   *注意：如果不配置 Key，AI 功能将使用默认回退文本，不影响时钟基础功能。*
-4.  **启动项目**:
-    ```bash
-    npm start
-    ```
-5.  **访问**: 打开浏览器访问 `http://localhost:8080` (或其他终端提示的端口)。
-
----
-
-## 🛠️ 技术栈
-*   **框架**: React 19, TypeScript
-*   **样式**: Tailwind CSS
-*   **AI 支持**: Google Gemini API (`gemini-3-flash-preview`)
-*   **视觉识别**: MediaPipe Tasks Vision (Hand Landmarker)
-*   **图标库**: Lucide React
-
----
-
-*享受您的禅意时光。*
+完整说明请阅读 [README.md](README.md)、[DEVELOPMENT.md](DEVELOPMENT.md) 和 [DEPLOYMENT.md](DEPLOYMENT.md)。

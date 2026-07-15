@@ -1,183 +1,151 @@
-﻿<div align="center">
-
-<img width="1200" height="475" alt="For Clock Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-
 # For Clock
 
-**极简 · 禅意 · 沉浸式时钟屏保**
+极简、沉浸式的多组件时钟应用，支持 Web/PWA、Android 与 iOS。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![React](https://img.shields.io/badge/React-19-61dafb.svg?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6.svg?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.2-646cff.svg?logo=vite)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8.svg?logo=tailwindcss)](https://tailwindcss.com/)
-[![Build & Release](https://github.com/cha3343954211/oneclock/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/cha3343954211/oneclock/actions/workflows/build-and-release.yml)
+当前仓库：`cha3343954211/ForClock`
 
-[下载应用](#-下载) · [功能特性](#-功能特性) · [使用说明](#-使用说明) · [开发指南](#-开发指南)
+当前开发分支：`yuhan`
 
-</div>
+## 功能概览
 
----
+- 自由画布：数字时钟、模拟时钟、日历、秒表/倒计时组件可自由添加、拖动、缩放和旋转
+- 多种视觉样式：数字翻页/滑动/淡入淡出、罗马数字表盘、邮票风格日历等
+- 五套主题：Midnight Void、Paper White、Cyberpunk Neon、Misty Forest、Retro Terminal
+- 粒子效果：Snow、Rain、Stars、Matrix
+- 手势控制：通过 MediaPipe 和摄像头控制粒子交互
+- AI 时光感悟：支持 Google Gemini 与 OpenAI 兼容接口；未配置密钥时使用本地语句池
+- 本地持久化：组件布局、主题和偏好保存在浏览器本地
+- PWA 与移动端：支持安装为 PWA，并通过 Capacitor 构建 Android/iOS 应用
 
-## 📥 下载
+## 环境要求
 
-| 平台 | 获取方式 |
-|---|---|
-| **Android** | [Releases](https://github.com/cha3343954211/oneclock/releases/latest) 下载 `For-Clock-Android.apk` |
-| **iOS** | [Releases](https://github.com/cha3343954211/oneclock/releases/latest) 下载 `For-Clock-iOS-unsigned.ipa`，用 [Sideloadly](https://sideloadly.io) 签名安装 |
-| **Web** | `git clone` 后 `npm run dev`，或直接部署 `dist/` |
+- Node.js 22 或更高版本
+- npm 10 或更高版本
+- Android 构建：Android Studio、Android SDK、Java 21
+- iOS 构建：macOS、Xcode；项目使用 Swift Package Manager
 
-> Android 安装前需在手机「设置 → 安全」中开启**允许安装未知来源应用**。  
-> iOS IPA 为未签名构建，安装后在「设置 → 通用 → VPN 与设备管理」信任证书。
+> Capacitor 8 要求 Node.js 22+。推荐使用 Node.js 22 或 24 的 LTS/稳定版本。
 
----
-
-## ✨ 功能特性
-
-### 🕐 三种时钟模式
-| 模式 | 说明 |
-|---|---|
-| **数字时钟** | 翻页动画效果，支持 12/24 小时制 |
-| **模拟时钟** | 优雅表盘，可开启平滑扫描秒针 |
-| **双显模式** | 模拟表盘 + 数字时钟同屏显示 |
-
-### 🎨 五套主题
-| 主题 | 风格 |
-|---|---|
-| **Midnight Void** | 极简黑，存在主义气质 |
-| **Paper White** | 纸白，书写与诗意 |
-| **Cyberpunk Neon** | 赛博霓虹，科技感 |
-| **Misty Forest** | 自然森林，随机背景图 |
-| **Retro Terminal** | 复古终端，绿色代码风 |
-
-### 🌟 粒子特效
-**飞雪 · 星空 · 雨滴 · 矩阵代码** — 四种粒子系统，支持手势实时交互。
-
-### ⏱️ 计时器 / 秒表
-- **秒表**：毫秒精度，实时计时
-- **倒计时**：自定义时长，结束时声音提醒
-
-### 🤖 AI 时光感悟
-- 接入 **Google Gemini / 自定义 OpenAI 兼容接口** 生成诗意时光感悟
-- **无需配置 API**：内置本地语句池，按主题 × 时段智能匹配，共 100+ 条双语语句
-
-### 🎛️ 深度自定义
-- **颜色**：实色或渐变（Sunset / Ocean / Aurora / Berry 等）
-- **字体**：现代无衬线 / 衬线 / 等宽 / 板式等多种
-- **背景**：上传本地图片，或使用主题自带背景
-- **元素布局**：双击任意元素 → 独立调整位置 / 大小 / 旋转 / 透明度 / 层级
-
-### ✋ 手势控制
-开启摄像头后，使用 **MediaPipe** 识别手势，实时操控粒子：
-
-| 手势 | 飞雪 / 星空 | 雨滴 | 矩阵 |
-|---|---|---|---|
-| ✊ 握拳 | 粒子聚拢 | 时间静止 | 系统崩溃 |
-| 🖐 张掌 | 粒子散开 | 雨伞模式 | 力场扭曲 |
-| 👆 食指 | 轻微吸引 | 风力控制 | 数据流向 |
-
----
-
-## 🚀 使用说明
-
-### 打开控制面板
-鼠标移至屏幕**顶部中央**，出现白色提示条后点击即可打开设置面板。点击面板外侧关闭。
-
-### 元素设置
-**双击**任意时钟元素（数字时钟 / 模拟时钟 / 日期）可打开该元素的独立配置面板，调整颜色、大小、位置、旋转等参数。
-
-### AI 感悟
-无 API Key 时自动从本地语句池取句，有 API Key 时调用 AI 实时生成。  
-在设置 → AI 配置中填入 Gemini Key 或任意 OpenAI 兼容接口。
-
----
-
-## 🛠️ 开发指南
-
-### 环境要求
-- Node.js 18+
-- npm
-
-### 快速启动
+## 本地运行
 
 ```bash
-git clone https://github.com/cha3343954211/oneclock.git
-cd oneclock
+git clone --branch yuhan --single-branch https://github.com/cha3343954211/ForClock.git
+cd ForClock
 
-npm install
-npm run dev        # http://localhost:3000
+npm ci
+cp .env.local.example .env.local
+npm run dev
 ```
 
-### 常用命令
+打开 <http://localhost:3000>。
+
+`GEMINI_API_KEY` 为可选配置。不配置时，应用仍可使用除在线 AI 生成外的全部核心功能，并自动使用本地感悟语句。
+
+## 环境变量
+
+复制示例文件后按需编辑：
 
 ```bash
-npm run build          # 生产构建
-npm run preview        # 预览构建产物
-npm run build:cap      # 构建 Web 并同步至 Capacitor
-npm run open:android   # Android Studio 打开 Android 项目
-npm run open:ios       # Xcode 打开 iOS 项目
+cp .env.local.example .env.local
 ```
 
-### 技术栈
+```dotenv
+GEMINI_API_KEY=
+```
+
+也可以直接在应用的 AI Settings 中配置 Gemini 或 OpenAI 兼容服务。请勿提交 `.env.local`。
+
+## 常用命令
+
+| 命令 | 说明 |
+|---|---|
+| `npm run dev` | 启动 Vite 开发服务器，默认端口 `3000` |
+| `npm run build` | 构建生产版 Web/PWA 到 `dist/` |
+| `npm run preview` | 本地预览生产构建 |
+| `npm run lint` | 执行 ESLint 检查 |
+| `npm run format` | 使用 Prettier 格式化代码 |
+| `npm run build:cap` | 构建 Web 并同步 Android/iOS 工程 |
+| `npm run sync:android` | 同步 Web 资源到 Android |
+| `npm run sync:ios` | 同步 Web 资源到 iOS |
+| `npm run open:android` | 使用 Android Studio 打开 Android 工程 |
+| `npm run open:ios` | 使用 Xcode 打开 iOS 工程 |
+| `npm run generate-icons` | 重新生成应用图标 |
+
+## 移动端构建
+
+### Android
+
+```bash
+npm ci
+npm run build:cap
+npm run open:android
+```
+
+也可以直接构建 Debug APK：
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+APK 输出路径：`android/app/build/outputs/apk/debug/app-debug.apk`。
+
+### iOS
+
+```bash
+npm ci
+npm run build:cap
+npm run open:ios
+```
+
+在 Xcode 中选择 `App` scheme 和目标设备后运行或 Archive。iOS 工程使用 Swift Package Manager，不需要执行 `pod install`。
+
+## 技术栈
 
 | 层级 | 技术 |
 |---|---|
-| UI 框架 | React 19 + TypeScript |
-| 样式 | Tailwind CSS v4 |
-| 构建 | Vite 6 |
-| 手势识别 | MediaPipe Tasks Vision |
-| AI | Google Gemini / OpenAI 兼容接口 |
-| 移动端 | Capacitor 8 (iOS / Android) |
+| UI | React 19、TypeScript 5.8 |
+| 样式 | Tailwind CSS 4 |
+| 构建 | Vite 6、vite-plugin-pwa |
+| 手势识别 | MediaPipe Tasks Vision 0.10 |
+| AI | Google Gen AI SDK、OpenAI 兼容接口 |
+| 移动端 | Capacitor 8、Android、iOS |
 | 图标 | Lucide React |
 
-### 项目结构
+## 项目结构
 
-```
-for-clock/
-├── components/          # UI 组件
-│   ├── DigitalClock.tsx
-│   ├── AnalogClock.tsx
-│   ├── TimerDisplay.tsx
-│   ├── DateLine.tsx
-│   ├── ParticlesCanvas.tsx
-│   ├── Controls.tsx
-│   ├── ElementSettings.tsx
-│   └── DraggableElement.tsx
-├── hooks/               # 状态管理 Hooks
-│   ├── useSettings.ts
-│   ├── useLayout.ts
-│   └── useTimers.ts
-├── services/
-│   ├── geminiService.ts # AI 调用
-│   └── wisdomPool.ts    # 本地语句池
-├── constants.ts         # 主题 / 颜色预设
-├── types.ts
-├── App.tsx
-└── index.html
+```text
+ForClock/
+├── components/          # 时钟、日历、计时器、控制面板与粒子组件
+├── contexts/            # 时间与全局设置上下文
+├── hooks/               # 设置、组件状态与布局预设
+├── services/            # AI 服务与本地感悟语句池
+├── public/              # PWA 图标和 MediaPipe 静态资源
+├── android/             # Capacitor Android 工程
+├── ios/                 # Capacitor iOS 工程
+├── scripts/             # 图标生成等维护脚本
+├── App.tsx              # 应用入口组件
+├── vite.config.ts       # Vite、PWA、开发服务器配置
+└── capacitor.config.ts  # 移动端应用配置
 ```
 
-### CI / CD
+## 分支与发布
 
-每次推送至 `main` 分支自动触发 **Build & Release** 流水线：
+- `yuhan`：当前开发分支，本地开发请优先使用该分支
+- `main` / `master`：工作流识别为稳定发布分支，发布标签为 `latest-build`
+- `pro`：工作流识别为功能发布分支，发布标签为 `latest-build-pro`
 
-```
-push → build-android (ubuntu) ┐
-                               ├─ 全部成功 → 创建 GitHub Release
-       build-ios (macos)      ┘
-```
+`.github/workflows/build-and-release.yml` 在推送到 `main`、`master` 或 `pro` 时构建 Android APK 和未签名 iOS IPA；也支持手动触发。`yuhan` 分支需要手动运行工作流，或合并到上述发布分支后触发自动发布。
 
-产物：`For-Clock-Android.apk` + `For-Clock-iOS-unsigned.ipa`，挂载至 `latest-build` Release。
+## 更多文档
 
----
+- [开发指南](DEVELOPMENT.md)
+- [部署指南](DEPLOYMENT.md)
+- [贡献指南](CONTRIBUTING.md)
+- [项目概览](PROJECT_OVERVIEW.md)
+- [iOS 开发指南](IOS版开发文档.md)
+- [文档索引](docs/INDEX.md)
 
-## 📄 License
+## License
 
-[MIT](LICENSE) © For Clock
-
----
-
-<div align="center">
-
-**If you find this project useful, please consider giving it a ⭐**
-
-</div>
+[MIT](LICENSE)
