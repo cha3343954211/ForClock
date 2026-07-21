@@ -1,4 +1,4 @@
-﻿import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.zenclock.app.pro',
@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   android: {
     // Allow WebView to use camera
-    allowMixedContent: true,
+    allowMixedContent: false,
     // 启动时 WebView 背景色（避免 HTML 加载前出现白/黑闪屏）
     backgroundColor: '#1A1A1A',
   },

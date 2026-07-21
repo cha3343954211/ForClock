@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useId } from 'react';
 import { ThemeConfig } from '../types';
 import { COLOR_PRESETS } from '../constants';
 import { useTime } from '../contexts/TimeContext';
@@ -38,47 +38,51 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
     return acc + delta;
   };
 
+  // 平滑模式 RAF 循环：仅依赖 isSmooth，避免 time 每秒变化导致 RAF 反复重建
   useEffect(() => {
-    if (isSmooth) {
-      // 切换到平滑模式时重置 tick 累积器，避免切回时角度异常
-      prevRawRef.current = { s: -1, m: -1, h: -1 };
+    if (!isSmooth) return;
+    // 切换到平滑模式时重置 tick 累积器，避免切回时角度异常
+    prevRawRef.current = { s: -1, m: -1, h: -1 };
 
-      const loop = () => {
-        const now = new Date();
-        const h   = now.getHours();
-        const m   = now.getMinutes();
-        const s   = now.getSeconds();
-        const ms  = now.getMilliseconds();
+    const loop = () => {
+      const now = new Date();
+      const h   = now.getHours();
+      const m   = now.getMinutes();
+      const s   = now.getSeconds();
+      const ms  = now.getMilliseconds();
 
-        // 从当天零点计算总秒数，全天单调递增，完全消除 360° 回绕闪烁
-        const totalSec = h * 3600 + m * 60 + s + ms / 1000;
+      // 从当天零点计算总秒数，全天单调递增，完全消除 360° 回绕闪烁
+      const totalSec = h * 3600 + m * 60 + s + ms / 1000;
 
-        setInternalAngles({
-          s: (totalSec / 60)    * 360,   // 每 60s 转一圈
-          m: (totalSec / 3600)  * 360,   // 每 60min 转一圈
-          h: (totalSec / 43200) * 360,   // 每 12h 转一圈
-        });
+      setInternalAngles({
+        s: (totalSec / 60)    * 360,   // 每 60s 转一圈
+        m: (totalSec / 3600)  * 360,   // 每 60min 转一圈
+        h: (totalSec / 43200) * 360,   // 每 12h 转一圈
+      });
 
-        rafRef.current = requestAnimationFrame(loop);
-      };
+      rafRef.current = requestAnimationFrame(loop);
+    };
 
-      loop();
-      return () => cancelAnimationFrame(rafRef.current);
-    } else {
-      // Tick 模式：用累积角度确保永远向前，消除 CSS transition 逆时针闪烁
-      const rawS = time.seconds * 6;
-      const rawM = (time.minutes / 60) * 360 + (time.seconds / 60) * 6;
-      const rawH = ((time.hours % 12) / 12) * 360 + (time.minutes / 60) * 30;
+    loop();
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isSmooth]);
 
-      const s = accum(prevRawRef.current.s, rawS, accumRef.current.s);
-      const m = accum(prevRawRef.current.m, rawM, accumRef.current.m);
-      const h = accum(prevRawRef.current.h, rawH, accumRef.current.h);
+  // Tick 模式：用累积角度确保永远向前，消除 CSS transition 逆时针闪烁
+  useEffect(() => {
+    if (isSmooth) return;
 
-      prevRawRef.current = { s: rawS, m: rawM, h: rawH };
-      accumRef.current   = { s, m, h };
+    const rawS = time.seconds * 6;
+    const rawM = (time.minutes / 60) * 360 + (time.seconds / 60) * 6;
+    const rawH = ((time.hours % 12) / 12) * 360 + (time.minutes / 60) * 30;
 
-      setInternalAngles({ s, m, h });
-    }
+    const s = accum(prevRawRef.current.s, rawS, accumRef.current.s);
+    const m = accum(prevRawRef.current.m, rawM, accumRef.current.m);
+    const h = accum(prevRawRef.current.h, rawH, accumRef.current.h);
+
+    prevRawRef.current = { s: rawS, m: rawM, h: rawH };
+    accumRef.current   = { s, m, h };
+
+    setInternalAngles({ s, m, h });
   }, [isSmooth, time]);
 
   // Destructure for rendering
@@ -93,7 +97,9 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
     : null;
 
   const isGradient = activePreset?.type === 'gradient';
-  const gradientId = 'clock-gradient'; // ID for SVG def
+  // useId 生成唯一 id，避免多实例 gradient def 冲突；去掉 ':' 防止 CSS 选择器转义问题
+  const rawId = useId();
+  const gradientId = `clock-gradient-${rawId.replace(/:/g, '')}`;
 
   // Helper to determine stroke color
   const getStrokeColor = (_fallbackClass: string) => {

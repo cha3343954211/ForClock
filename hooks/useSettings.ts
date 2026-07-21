@@ -1,5 +1,5 @@
-﻿import { useState, useEffect } from 'react';
-import { ThemeId, ClockMode, ParticleMode, AIConfig } from '../types';
+import { useState, useEffect } from 'react';
+import { ThemeId, ParticleMode, AIConfig } from '../types';
 
 export interface SettingsState {
   // 外观
@@ -8,7 +8,6 @@ export interface SettingsState {
   customFont: string | null;
   customBackground: string | null;
   // 时钟模式
-  clockMode: ClockMode;
   particleMode: ParticleMode;
   // 时钟开关
   showSeconds: boolean;
@@ -25,7 +24,6 @@ export interface SettingsState {
 
 export interface SettingsActions {
   setThemeId: (id: ThemeId) => void;
-  setClockMode: (mode: ClockMode) => void;
   setParticleMode: (mode: ParticleMode) => void;
   toggleSeconds: () => void;
   toggle24Hour: () => void;
@@ -48,13 +46,12 @@ const DEFAULT_AI_CONFIG: AIConfig = {
   provider: 'gemini',
   apiKey: '',
   baseUrl: '',
-  model: 'gemini-3-flash-preview',
+  model: 'gemini-2.5-flash',
 };
 
 // 全量设置持久化键（除 customBackground 外，后者是 ObjectURL 不能跨会话复用）
 const KEYS = {
   THEME:           'for_clock_theme_id',
-  CLOCK_MODE:      'for_clock_clock_mode',
   PARTICLE_MODE:   'for_clock_particle_mode',
   SHOW_SECONDS:    'for_clock_show_seconds',
   USE_24H:         'for_clock_use_24h',
@@ -87,7 +84,6 @@ function saveJSON(key: string, value: unknown): void {
 export function useSettings(): UseSettingsReturn {
   // 从 localStorage 延迟初始化所有偏好
   const [themeId, setThemeId]                   = useState<ThemeId>(    () => loadJSON(KEYS.THEME,         ThemeId.MINIMAL_DARK));
-  const [clockMode, setClockMode]               = useState<ClockMode>(  () => loadJSON(KEYS.CLOCK_MODE,    ClockMode.DIGITAL));
   const [particleMode, setParticleMode]         = useState<ParticleMode>(() => loadJSON(KEYS.PARTICLE_MODE, ParticleMode.NONE));
   const [showSeconds, setShowSeconds]           = useState<boolean>(    () => loadJSON(KEYS.SHOW_SECONDS,  true));
   const [use24Hour, setUse24Hour]               = useState<boolean>(    () => loadJSON(KEYS.USE_24H,       false));
@@ -104,7 +100,6 @@ export function useSettings(): UseSettingsReturn {
 
   // 持久化——一状态一 effect，避免任意字段变动重复序列化所有
   useEffect(() => { saveJSON(KEYS.THEME,         themeId);         }, [themeId]);
-  useEffect(() => { saveJSON(KEYS.CLOCK_MODE,    clockMode);       }, [clockMode]);
   useEffect(() => { saveJSON(KEYS.PARTICLE_MODE, particleMode);    }, [particleMode]);
   useEffect(() => { saveJSON(KEYS.SHOW_SECONDS,  showSeconds);     }, [showSeconds]);
   useEffect(() => { saveJSON(KEYS.USE_24H,       use24Hour);       }, [use24Hour]);
@@ -146,7 +141,6 @@ export function useSettings(): UseSettingsReturn {
   return {
     // State
     themeId,
-    clockMode,
     particleMode,
     showSeconds,
     use24Hour,
@@ -161,7 +155,6 @@ export function useSettings(): UseSettingsReturn {
     aiConfig,
     // Actions
     setThemeId: handleSetThemeId,
-    setClockMode,
     setParticleMode,
     toggleSeconds: () => setShowSeconds(v => !v),
     toggle24Hour: () => setUse24Hour(v => !v),

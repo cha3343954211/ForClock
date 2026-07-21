@@ -2,8 +2,20 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-// Source image path
-const sourceImage = 'C:/Users/33439/.gemini/antigravity/brain/f00e0350-b93c-465d-b0b1-5aa09408d598/uploaded_image_1767027122371.jpg';
+// Source image path:
+//   1. CLI 参数：npm run generate-icons -- /path/to/icon.png
+//   2. 项目内默认：assets/source-icon.png
+//   3. 环境变量：ICON_SOURCE=/path/to/icon.png
+const sourceImage = process.argv[2]
+  || process.env.ICON_SOURCE
+  || path.join(__dirname, '..', 'assets', 'source-icon.png');
+
+if (!fs.existsSync(sourceImage)) {
+  console.error(`[generate-icons] 源图片不存在: ${sourceImage}`);
+  console.error('  用法: npm run generate-icons -- /path/to/icon.png');
+  console.error('  或将图片放到 assets/source-icon.png');
+  process.exit(1);
+}
 
 // Android mipmap sizes
 const androidSizes = [

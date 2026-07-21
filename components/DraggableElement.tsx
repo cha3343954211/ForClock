@@ -7,7 +7,7 @@ interface DraggableElementProps {
     onConfigChange: (id: string, config: Partial<ElementConfig>) => void;
     onDoubleClick: (id: string) => void;
     children: React.ReactNode;
-    containerRef: React.RefObject<HTMLDivElement>;
+    containerRef: React.RefObject<HTMLDivElement | null>;
     dragSensitivity?: number;
 }
 
@@ -28,6 +28,10 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
     const initialPinchAngle = useRef(0);
     const initialScale = useRef(1);
     const initialRotation = useRef(0);
+
+    // rAF 节流：拖拽时 mousemove 约 60 次/秒，用 rAF 合并到帧刷新，避免每帧多次 setState
+    const rafIdRef = useRef<number>(0);
+    const pendingPosRef = useRef<{ x: number; y: number } | null>(null);
 
     // Stable refs for wheel handler — avoids stale closure in high-frequency events
     const elementRef = useRef<HTMLDivElement>(null);
@@ -77,12 +81,32 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
         const newX = elementStartPos.current.x + deltaX;
         const newY = elementStartPos.current.y + deltaY;
 
-        onConfigChange(id, { x: newX, y: newY });
+        // rAF 节流：合并同一帧内多次 mousemove 为一次 setState
+        pendingPosRef.current = { x: newX, y: newY };
+        if (rafIdRef.current) return; // 已有待执行帧
+        rafIdRef.current = requestAnimationFrame(() => {
+            rafIdRef.current = 0;
+            const pos = pendingPosRef.current;
+            if (pos) {
+                pendingPosRef.current = null;
+                onConfigChange(id, { x: pos.x, y: pos.y });
+            }
+        });
     }, [isDragging, id, onConfigChange, containerRef, dragSensitivity]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
-    }, []);
+        // 拖拽结束时立即 flush 未执行的 rAF，确保最后一次 mousemove 的位置不丢失
+        if (rafIdRef.current) {
+            cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = 0;
+            const pos = pendingPosRef.current;
+            if (pos) {
+                pendingPosRef.current = null;
+                onConfigChange(id, { x: pos.x, y: pos.y });
+            }
+        }
+    }, [id, onConfigChange]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         e.preventDefault();
@@ -148,7 +172,17 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
             const newX = elementStartPos.current.x + deltaX;
             const newY = elementStartPos.current.y + deltaY;
 
-            onConfigChange(id, { x: newX, y: newY });
+            // rAF 节流：合并同一帧内多次 touchmove 为一次 setState
+            pendingPosRef.current = { x: newX, y: newY };
+            if (rafIdRef.current) return;
+            rafIdRef.current = requestAnimationFrame(() => {
+                rafIdRef.current = 0;
+                const pos = pendingPosRef.current;
+                if (pos) {
+                    pendingPosRef.current = null;
+                    onConfigChange(id, { x: pos.x, y: pos.y });
+                }
+            });
         }
     }, [isPinching, isDragging, id, onConfigChange, containerRef, dragSensitivity]);
 
@@ -208,6 +242,11 @@ export const DraggableElement: React.FC<DraggableElementProps> = ({
             window.removeEventListener('mouseup', handleMouseUp);
             window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('touchend', handleTouchEnd);
+            // 清理未执行的 rAF，避免卸载后 setState
+            if (rafIdRef.current) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = 0;
+            }
         };
     }, [isDragging, isPinching, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 

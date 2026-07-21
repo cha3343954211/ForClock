@@ -10,14 +10,12 @@ function parseHour(timeString: string): number {
 
 /** 判断当前配置是否完全没有可用的 API 密钥 */
 function hasNoApiKey(config?: AIConfig): boolean {
-  if (!config) return !process.env.API_KEY;
+  if (!config) return true;
   if (config.apiKey) return false;
-  if (config.provider === 'gemini' && process.env.API_KEY) return false;
   return true;
 }
 
 // 注意：@google/genai 体积约 253KB，改为动态 import，只在调用 AI 时下载
-let defaultGenAI: GoogleGenAIType | null = null;
 let GoogleGenAICtor: typeof GoogleGenAIType | null = null;
 
 async function loadGenAI(): Promise<typeof GoogleGenAIType> {
@@ -103,7 +101,7 @@ export const generateTimeReflection = async (
 
   // 2. Handle Google Gemini - 按需动态加载 SDK
   let aiClient: GoogleGenAIType | null = null;
-  let modelName = 'gemini-3-flash-preview';
+  let modelName = 'gemini-2.5-flash';
 
   if (config && config.provider === 'gemini') {
     if (config.apiKey) {
@@ -111,28 +109,16 @@ export const generateTimeReflection = async (
         const GenAI = await loadGenAI();
         // 每次用最新 key 实例化，避免旧 client 残留
         aiClient = new GenAI({ apiKey: config.apiKey });
-        defaultGenAI = aiClient;
       } catch (e) {
         console.error('Invalid Custom Gemini Key', e);
         return getLocalWisdom(hour, themeLabel);
       }
-    } else if (process.env.API_KEY) {
-      // 环境变量 key（懒加载，复用实例）
-      if (!defaultGenAI) {
-        try {
-          const GenAI = await loadGenAI();
-          defaultGenAI = new GenAI({ apiKey: process.env.API_KEY });
-        } catch (error) {
-          console.error('Failed to initialize GoogleGenAI', error);
-        }
-      }
-      aiClient = defaultGenAI;
     }
-    // 无任何 key：aiClient 保持 null → 下方 fallback
+    // 无 apiKey：aiClient 保持 null → 下方 fallback
     if (config.model) modelName = config.model;
   } else if (!config) {
-    // 未传 config：尝试用环境变量
-    aiClient = defaultGenAI;
+    // 未传 config：无 API key，走本地 fallback
+    aiClient = null;
   }
 
   if (!aiClient) {

@@ -23,7 +23,11 @@ const DEFAULT_SCALES: Record<WidgetType, number> = {
 // ---- ID 生成 ----
 
 function genId(): string {
-  return `w_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  // 优先使用 crypto.randomUUID（现代浏览器 + Node 均支持），回退到时间戳+随机数
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `w_${crypto.randomUUID()}`;
+  }
+  return `w_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 // ---- Widget 工厂 ----
@@ -136,18 +140,47 @@ function getDefaults(): WidgetRecord[] {
 
 // ---- 持久化 ----
 
+const VALID_WIDGET_TYPES: readonly string[] = ['digital', 'analog', 'calendar', 'timer'];
+
+/** 校验 localStorage 反序列化后的单条记录是否符合 WidgetRecord schema */
+function isValidWidget(v: unknown): v is WidgetRecord {
+  if (typeof v !== 'object' || v === null) return false;
+  const w = v as Record<string, unknown>;
+  return (
+    typeof w.id === 'string' &&
+    typeof w.type === 'string' &&
+    VALID_WIDGET_TYPES.includes(w.type) &&
+    typeof w.x === 'number' &&
+    typeof w.y === 'number' &&
+    typeof w.scale === 'number'
+  );
+}
+
+/** 倒计时加载后若已超时，置为 finished，避免页面重载后显示"还剩 0 但仍 running" */
+function normalizeTimerState(w: WidgetRecord): WidgetRecord {
+  if (w.type === 'timer' && w.mode === 'countdown' && w.accumulated >= w.countdownTarget) {
+    return { ...w, status: 'finished', accumulated: w.countdownTarget };
+  }
+  return w;
+}
+
 function load(): WidgetRecord[] {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) {
-      const parsed: WidgetRecord[] = JSON.parse(s);
+      const parsed: unknown = JSON.parse(s);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // 页面重载时将运行中的计时器转为暂停，并保存累计时间
-        return parsed.map(w =>
-          w.status === 'running'
-            ? { ...w, status: 'paused' as TimerStatus, accumulated: w.accumulated + Math.max(0, Date.now() - w.startTs) }
-            : w
-        );
+        const widgets = parsed.filter(isValidWidget);
+        if (widgets.length > 0) {
+          // 页面重载时将运行中的计时器转为暂停，并保存累计时间
+          return widgets
+            .map(w =>
+              w.status === 'running'
+                ? { ...w, status: 'paused' as TimerStatus, accumulated: w.accumulated + Math.max(0, Date.now() - w.startTs) }
+                : w
+            )
+            .map(normalizeTimerState);
+        }
       }
     }
     return getDefaults();
@@ -156,8 +189,41 @@ function load(): WidgetRecord[] {
   }
 }
 
+// ---- 持久化 ----
+
+/** 防抖写入 localStorage：拖拽时 mousemove 约 60 次/秒，避免每次都做同步 JSON.stringify + setItem */
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let latestWidgets: WidgetRecord[] | null = null;
+
 function save(widgets: WidgetRecord[]): void {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(widgets)); } catch { /* 配额超限时静默 */ }
+  latestWidgets = widgets;
+  if (saveTimer) clearTimeout(saveTimer);
+  // 300ms 内无新更新才真正写入；页面卸载时 beforeunload 兜底立即写
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    if (latestWidgets) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(latestWidgets)); } catch { /* 配额超限静默 */ }
+      latestWidgets = null;
+    }
+  }, 300);
+}
+
+// 页面隐藏/卸载时强制写入未保存的最新状态，避免数据丢失
+if (typeof window !== 'undefined') {
+  const flushSave = () => {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+    if (latestWidgets) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(latestWidgets)); } catch { /* ignore */ }
+      latestWidgets = null;
+    }
+  };
+  window.addEventListener('beforeunload', flushSave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
 }
 
 // ---- 工具函数（供 TimerDisplay 使用）----
@@ -275,6 +341,8 @@ export function useWidgets(): UseWidgetsReturn {
       save(next);
       return next;
     });
+    // 若被删除的 widget 正在编辑，关闭设置面板
+    setActiveSettingsId(prev => (prev === id ? null : prev));
   }, []);
 
   const updateWidget = useCallback((id: string, p: Partial<WidgetRecord>) => patch(id, p), [patch]);
