@@ -27,6 +27,7 @@ import {
   AlarmClock,
   CalendarDays,
   Plus,
+  AlertTriangle,
 } from 'lucide-react';
 import { ParticleMode, AIConfig, AIProvider, WidgetType } from '../types';
 import { THEMES } from '../constants';
@@ -43,11 +44,17 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
   const { settings, widgets: widgetsCtx, isGeneratingWisdom, controlsVisible } = useSettingsContext();
   const { widgets, dragSensitivity, setDragSensitivity, resetPositions, addWidget, clearAll } = widgetsCtx;
 
+  // 自定义确认弹窗（替代 window.confirm，移动端体验更好且样式统一）
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   const handleClearAll = () => {
     if (widgets.length === 0) return;
-    if (window.confirm(`确认清除画布上全部 ${widgets.length} 个组件？此操作不可撤销。`)) {
-      clearAll();
-    }
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearAll = () => {
+    clearAll();
+    setShowClearConfirm(false);
   };
 
   const {
@@ -88,7 +95,7 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
   const handleProviderChange = (provider: AIProvider) => {
     const defaults: Record<string, { baseUrl: string; model: string }> = {
       modelscope: { baseUrl: 'https://api-inference.modelscope.cn/v1', model: 'qwen-turbo' },
-      gemini:     { baseUrl: '', model: 'gemini-3-flash-preview' },
+      gemini:     { baseUrl: '', model: 'gemini-2.5-flash' },
     };
     const d = defaults[provider] ?? { baseUrl: aiConfig.baseUrl, model: aiConfig.model };
     setAiConfig({ ...aiConfig, provider, baseUrl: d.baseUrl, model: d.model });
@@ -108,6 +115,7 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
             <button onClick={toggleSeconds}
               className={`p-2 rounded-xl transition-all ${showSeconds ? 'bg-white/14 text-white ring-1 ring-white/20 shadow-inner' : 'text-white/40 hover:text-white/75 hover:bg-white/8'}`}
               title={showSeconds ? '隐藏秒' : '显示秒'}
+              aria-label={showSeconds ? '隐藏秒' : '显示秒'}
             >{showSeconds ? <Timer size={15} /> : <TimerOff size={15} />}</button>
 
             <button onClick={toggle24Hour}
@@ -123,27 +131,32 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
               <button onClick={clearBackground}
                 className="p-2 text-red-300 hover:text-red-200 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
                 title="移除自定义背景"
+                aria-label="移除自定义背景"
               ><X size={16} /></button>
             ) : (
               <button onClick={() => fileInputRef.current?.click()}
                 className="p-2 text-white/50 hover:text-white transition-colors"
                 title="上传自定义背景"
+                aria-label="上传自定义背景"
               ><ImageIcon size={16} /></button>
             )}
 
             <button onClick={toggleWisdom}
               className={`p-2 transition-all rounded-lg ${showWisdom ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
               title={showWisdom ? '隐藏每日格言' : '显示每日格言'}
+              aria-label={showWisdom ? '隐藏每日格言' : '显示每日格言'}
             ><Quote size={16} /></button>
 
             <button onClick={toggleCamera}
               className={`p-2 transition-all rounded-lg ${isCameraEnabled ? 'bg-red-500/20 text-red-200 animate-pulse' : 'text-white/50 hover:text-white'}`}
               title={isCameraEnabled ? '关闭手势识别' : '开启手势识别'}
+              aria-label={isCameraEnabled ? '关闭手势识别' : '开启手势识别'}
             >{isCameraEnabled ? <CameraOff size={16} /> : <Camera size={16} />}</button>
 
             <button onClick={toggleFullscreen}
               className="p-2 text-white/50 hover:text-white transition-colors"
               title="全屏"
+              aria-label="切换全屏"
             ><Maximize size={16} /></button>
           </div>
         </div>
@@ -286,6 +299,9 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
                   placeholder={aiConfig.provider === 'gemini' ? 'Optional' : 'Required'}
                   className="bg-black/40 border border-white/10 rounded-lg text-xs text-white px-2 py-1.5 focus:outline-none focus:border-white/30"
                 />
+                <p className="text-[9px] text-amber-400/60 flex items-center gap-1 mt-0.5">
+                  <AlertTriangle size={9} /> 密钥仅存储于本设备浏览器，不会上传服务器
+                </p>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] text-white/40 uppercase tracking-wider font-medium flex items-center gap-1">
@@ -293,7 +309,7 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
                 </label>
                 <input type="text" value={aiConfig.model}
                   onChange={e => handleAIConfigChange('model', e.target.value)}
-                  placeholder="e.g. gemini-pro"
+                  placeholder="e.g. gemini-2.5-flash"
                   className="bg-black/40 border border-white/10 rounded-lg text-xs text-white px-2 py-1.5 focus:outline-none focus:border-white/30"
                 />
               </div>
@@ -314,6 +330,42 @@ export const Controls: React.FC<ControlsProps> = ({ onGenerateWisdom, onUploadBa
         </div>
 
       </div>
+
+      {/* 清除全部确认弹窗（替代 window.confirm，样式与应用一致）*/}
+      {showClearConfirm && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[1px]"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="确认清除全部组件"
+          onClick={() => setShowClearConfirm(false)}
+        >
+          <div
+            className="bg-black/80 backdrop-blur-2xl border border-white/20 rounded-2xl p-6 max-w-xs w-[85%] text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-3">⚠️</div>
+            <h3 className="text-white font-semibold text-base mb-2">确认清除？</h3>
+            <p className="text-white/50 text-xs mb-5 leading-relaxed">
+              将清除画布上全部 {widgets.length} 个组件<br />此操作不可撤销
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white text-xs font-medium transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmClearAll}
+                className="flex-1 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-300 hover:text-red-200 text-xs font-medium transition-colors"
+              >
+                清除全部
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

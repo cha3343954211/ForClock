@@ -1,20 +1,44 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#1A1A1A" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f4" />
     <meta name="description" content="For Clock - 极简禅意时钟屏保，融合 AI 感悟与手势交互" />
+    <meta name="application-name" content="For Clock" />
+
+    <!-- CSP：限制资源来源，降低 XSS 风险 -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                  img-src 'self' https://picsum.photos data: blob:;
+                  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                  font-src 'self' https://fonts.gstatic.com;
+                  script-src 'self';
+                  connect-src 'self' https://generativelanguage.googleapis.com https://api-inference.modelscope.cn https://api.openai.com;
+                  media-src 'self' blob:;
+                  worker-src 'self' blob:;" />
+
+    <!-- 社交分享 -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="For Clock - 禅意时钟屏保" />
+    <meta property="og:description" content="极简禅意时钟屏保，融合 AI 感悟与手势交互" />
+    <meta property="og:image" content="/icon-512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="For Clock - 禅意时钟屏保" />
+    <meta name="twitter:description" content="极简禅意时钟屏保，融合 AI 感悟与手势交互" />
 
     <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="For Clock" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
 
     <!-- Android PWA -->
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <title>For Clock Screensaver</title>
+    <title>For Clock - 禅意时钟屏保</title>
 
     <!-- 关键内联样式：立即上色，消除启动黑/白屏 -->
     <style>

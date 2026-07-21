@@ -1,4 +1,4 @@
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { THEMES, FOREST_BG_FALLBACK } from './constants';
 import { ParticleMode, WidgetType } from './types';
 import { DigitalClock } from './components/DigitalClock';
@@ -36,39 +36,62 @@ const App: React.FC = () => {
     setActiveSettingsId,
     updateWidget,
     removeWidget,
+    startTimer,
+    pauseTimer,
+    resetTimer,
+    finishTimer,
+    setTimerMode,
+    setTimerCountdownTarget,
   } = widgetsCtx;
 
   const handleGenerateWisdom = async () => {
     if (isGeneratingWisdom) return;
     setIsGeneratingWisdom(true);
-    const now = new Date();
-    const h   = now.getHours();
-    const timeString = `${h}:${now.getMinutes().toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
-    const result = await generateTimeReflection(timeString, currentTheme.label, settings.aiConfig);
-    setWisdom(result);
-    setIsGeneratingWisdom(false);
+    try {
+      const now = new Date();
+      const h   = now.getHours();
+      const timeString = `${h}:${now.getMinutes().toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+      const result = await generateTimeReflection(timeString, currentTheme.label, settings.aiConfig);
+      setWisdom(result);
+    } catch (err) {
+      console.error('Failed to generate wisdom:', err);
+      setWisdom('时光感悟暂时无法生成，请稍后再试。');
+    } finally {
+      setIsGeneratingWisdom(false);
+    }
   };
 
   const handleUploadBackground = (file: File) => {
     settings.setCustomBackground(URL.createObjectURL(file));
   };
 
-  // 为每个 timer widget 绑定操作集
-  const makeTimerActions = (id: string): TimerActions => ({
-    start:              () => widgetsCtx.startTimer(id),
-    pause:              () => widgetsCtx.pauseTimer(id),
-    reset:              () => widgetsCtx.resetTimer(id),
-    finish:             () => widgetsCtx.finishTimer(id),
-    setMode:            m  => widgetsCtx.setTimerMode(id, m),
-    setCountdownTarget: ms => widgetsCtx.setTimerCountdownTarget(id, ms),
-    updateVisual:       p  => updateWidget(id, p),
-    remove:             () => removeWidget(id),
-  });
+  // 为每个 timer widget 绑定操作集（按 id 缓存，避免每次渲染创建新对象导致子组件无谓重渲染）
+  const timerActionsCacheRef = useRef<Map<string, TimerActions>>(new Map());
+  const getTimerActions = useCallback((id: string): TimerActions => {
+    const cached = timerActionsCacheRef.current.get(id);
+    if (cached) return cached;
+    const actions: TimerActions = {
+      start:              () => startTimer(id),
+      pause:              () => pauseTimer(id),
+      reset:              () => resetTimer(id),
+      finish:             () => finishTimer(id),
+      setMode:            m  => setTimerMode(id, m),
+      setCountdownTarget: ms => setTimerCountdownTarget(id, ms),
+      // remove 需同时清理缓存，避免删除后 Map 残留引用（内存泄漏）
+      updateVisual:       p  => updateWidget(id, p),
+      remove:             () => {
+        timerActionsCacheRef.current.delete(id);
+        removeWidget(id);
+      },
+    };
+    timerActionsCacheRef.current.set(id, actions);
+    return actions;
+  }, [startTimer, pauseTimer, resetTimer, finishTimer, setTimerMode, setTimerCountdownTarget, updateWidget, removeWidget]);
 
   const { showSeconds, use24Hour, isSmooth, isFlip, showHourNumbers, customColor, customFont } = settings;
 
-  /** 按 widget type 渲染对应组件内容 */
-  const renderWidgetContent = (w: typeof widgets[number]) => {
+  /** 按 widget type 渲染对应组件内容（useCallback 缓存，避免每次渲染创建新函数）*/
+  const renderWidgetContent = useCallback((w: typeof widgets[number]) => {
     const effectiveColor = w.customColor || customColor;
     switch (w.type as WidgetType) {
       case 'digital':
@@ -110,21 +133,26 @@ const App: React.FC = () => {
           />
         );
       case 'timer':
-        return <TimerDisplay timer={w} actions={makeTimerActions(w.id)} />;
+        return <TimerDisplay timer={w} actions={getTimerActions(w.id)} />;
+      default:
+        return null;
     }
-  };
+  }, [currentTheme, showSeconds, use24Hour, isFlip, customColor, customFont, isSmooth, showHourNumbers, getTimerActions]);
 
   const activeWidget = activeSettingsId
     ? widgets.find(w => w.id === activeSettingsId)
     : null;
 
+  // useMemo 包裹 context value，避免每次渲染创建新对象导致所有消费者无谓重渲染
+  const ctxValue = useMemo(() => ({
+    settings, widgets: widgetsCtx,
+    wisdom, setWisdom,
+    isGeneratingWisdom, setIsGeneratingWisdom,
+    controlsVisible, setControlsVisible,
+  }), [settings, widgetsCtx, wisdom, isGeneratingWisdom, controlsVisible]);
+
   return (
-    <SettingsProvider value={{
-      settings, widgets: widgetsCtx,
-      wisdom, setWisdom,
-      isGeneratingWisdom, setIsGeneratingWisdom,
-      controlsVisible, setControlsVisible,
-    }}>
+    <SettingsProvider value={ctxValue}>
       <div
         ref={containerRef}
         className={`relative w-full h-screen overflow-hidden transition-colors duration-700 ease-in-out flex flex-col items-center justify-center ${currentTheme.bgClass}`}
@@ -170,7 +198,7 @@ const App: React.FC = () => {
 
         {/* 顶部触发条 */}
         <div
-          className={`absolute top-0 left-0 w-full h-24 z-40 cursor-pointer flex justify-center items-start pt-2 group transition-all duration-300 ${controlsVisible ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+          className={`absolute top-0 left-0 w-full h-24 z-40 cursor-pointer flex justify-center items-start pt-[max(0.5rem,env(safe-area-inset-top))] group transition-all duration-300 ${controlsVisible ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
           onClick={() => setControlsVisible(true)}
         >
           <div className="w-32 h-1 bg-white/10 rounded-full group-hover:bg-white/40 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]" />

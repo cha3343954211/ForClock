@@ -1,10 +1,4 @@
 
-export enum ClockMode {
-  DIGITAL = 'DIGITAL',
-  ANALOG = 'ANALOG',
-  DUAL = 'DUAL',
-}
-
 export enum ThemeId {
   MINIMAL_DARK = 'MINIMAL_DARK',
   MINIMAL_LIGHT = 'MINIMAL_LIGHT',

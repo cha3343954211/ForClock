@@ -8,19 +8,22 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
     hasError: boolean;
     error: Error | null;
+    retryKey: number;
 }
 
 /**
  * ErrorBoundary component to catch JavaScript errors in child components
  * and display a fallback UI instead of crashing the entire app.
+ *
+ * 重试时通过递增 retryKey 强制 children remount，避免错误状态残留导致死循环。
  */
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {
         super(props);
-        this.state = { hasError: false, error: null };
+        this.state = { hasError: false, error: null, retryKey: 0 };
     }
 
-    public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
         return { hasError: true, error };
     }
 
@@ -29,7 +32,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
 
     private handleRetry = (): void => {
-        this.setState({ hasError: false, error: null });
+        // 递增 retryKey → Fragment key 变化 → 子树整体 remount
+        this.setState(prev => ({ hasError: false, error: null, retryKey: prev.retryKey + 1 }));
     };
 
     public render(): ReactNode {
@@ -57,6 +61,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             );
         }
 
-        return this.props.children;
+        // 用 retryKey 作为 Fragment key，重试时强制整个子树 remount
+        return (
+            <React.Fragment key={this.state.retryKey}>
+                {this.props.children}
+            </React.Fragment>
+        );
     }
 }

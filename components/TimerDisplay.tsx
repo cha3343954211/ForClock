@@ -1,4 +1,4 @@
-﻿import React, { useReducer, useEffect, useRef } from 'react';
+import React, { useReducer, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Timer, AlarmClock, X } from 'lucide-react';
 import { TimerMode, WidgetRecord } from '../types';
 import { calcDisplayMs, formatMs, playAlertTone } from '../hooks/useWidgets';
@@ -40,8 +40,8 @@ const CountdownInput: React.FC<{
   const inputCls = 'w-12 text-center bg-white/10 border border-white/20 rounded-lg text-white text-lg font-mono focus:outline-none py-1';
   return (
     <div className="flex items-center justify-center gap-1">
-      <input type="number" min={0} max={99} value={mins}
-        onChange={e => onChange((clamp(parseInt(e.target.value) || 0, 0, 99) * 60 + secs) * 1000)}
+      <input type="number" min={0} max={599} value={mins}
+        onChange={e => onChange((clamp(parseInt(e.target.value) || 0, 0, 599) * 60 + secs) * 1000)}
         className={inputCls} style={{ color: solidColor || undefined, ...borderStyle }} />
       <span className="text-white/50 text-xl font-mono" style={{ color: solidColor || undefined }}>:</span>
       <input type="number" min={0} max={59} value={String(secs).padStart(2, '0')}
@@ -82,14 +82,19 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
   const actionsRef     = useRef(actions);
   actionsRef.current   = actions;
 
+  // 用 ref 跟踪运行时参数，避免 interval effect 频繁重建
+  const timerParamsRef = useRef({ accumulated, startTs, countdownTarget, mode });
+  timerParamsRef.current = { accumulated, startTs, countdownTarget, mode };
+
   useEffect(() => {
     if (status === 'running') hasFinishedRef.current = false;
     if (status !== 'running') return;
 
     const id = window.setInterval(() => {
       if (hasFinishedRef.current) return;
-      const elapsed = accumulated + Math.max(0, Date.now() - startTs);
-      if (mode === 'countdown' && elapsed >= countdownTarget) {
+      const { accumulated: acc, startTs: st, countdownTarget: ct, mode: md } = timerParamsRef.current;
+      const elapsed = acc + Math.max(0, Date.now() - st);
+      if (md === 'countdown' && elapsed >= ct) {
         hasFinishedRef.current = true;
         actionsRef.current.finish();
         playAlertTone();
@@ -98,7 +103,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
       }
     }, 50);
     return () => window.clearInterval(id);
-  }, [status, mode, accumulated, startTs, countdownTarget]);
+  }, [status]);
 
   const displayMs = calcDisplayMs(timer);
 
@@ -245,7 +250,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timer, actions }) =>
       </div>
 
       {/* ── 双击提示（极弱，仅占位）── */}
-      <span className="text-[9px] text-white/15 mt-1">双击自定义颜色 / 大小</span>
+      <span className="text-[9px] text-white/15 mt-1">双击打开设置</span>
 
     </div>
   );

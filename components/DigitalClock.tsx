@@ -226,6 +226,39 @@ const FlipDigit: React.FC<{
   );
 };
 
+/** 尺寸规格类型 */
+interface SizeSpec {
+  singleW: string;
+  h: string;
+  fs: string;
+}
+
+/** 分隔符：翻牌模式用两圆点，普通模式用冒号（提取为模块级组件避免每次 render 重新挂载）*/
+const Sep: React.FC<{
+  isAnimMode: boolean;
+  dotColor: string;
+  textStyle: React.CSSProperties;
+  glowStyle: React.CSSProperties;
+  opacity?: number;
+  sz: SizeSpec;
+}> = ({ isAnimMode, dotColor, textStyle, glowStyle, opacity = 0.7, sz }) => {
+  if (isAnimMode) {
+    const ds = `clamp(5px,min(1.3vw,14px),14px)`;
+    return (
+      <div className="flex flex-col items-center justify-center"
+           style={{ height: sz.h, gap: 'clamp(4px,min(0.9vw,10px),10px)' }}>
+        <div style={{ width: ds, height: ds, borderRadius: '50%', background: dotColor, opacity }} />
+        <div style={{ width: ds, height: ds, borderRadius: '50%', background: dotColor, opacity }} />
+      </div>
+    );
+  }
+  return (
+    <span className="font-black leading-none select-none animate-pulse"
+          style={{ ...textStyle, ...glowStyle, fontSize: sz.fs, opacity, lineHeight: 1 }}>:
+    </span>
+  );
+};
+
 export const DigitalClock: React.FC<DigitalClockProps> = ({
   theme,
   showSeconds,
@@ -318,37 +351,20 @@ export const DigitalClock: React.FC<DigitalClockProps> = ({
   const renderGroup = (valStr: string, sz: typeof MAIN) =>
     isAnimMode ? renderAnimPair(valStr, sz) : renderPair(valStr, sz);
 
-  /** 分隔符：翻牌模式用两圆点，普通模式用冒号 */
+  /** 分隔符颜色 */
   const dotColor = isGradient ? (isLightTheme ? '#1a1a2e' : '#f0f0f8') : effectiveColor;
-  const Sep = ({ opacity = 0.7, sz = MAIN }: { opacity?: number; sz?: typeof MAIN }) => {
-    if (isAnimMode) {
-      const ds = `clamp(5px,min(1.3vw,14px),14px)`;
-      return (
-        <div className="flex flex-col items-center justify-center"
-             style={{ height: sz.h, gap: 'clamp(4px,min(0.9vw,10px),10px)' }}>
-          <div style={{ width: ds, height: ds, borderRadius: '50%', background: dotColor, opacity }} />
-          <div style={{ width: ds, height: ds, borderRadius: '50%', background: dotColor, opacity }} />
-        </div>
-      );
-    }
-    return (
-      <span className="font-black leading-none select-none animate-pulse"
-            style={{ ...textStyle, ...glowStyle, fontSize: sz.fs, opacity, lineHeight: 1 }}>:
-      </span>
-    );
-  };
 
   return (
     <div className="flex flex-col items-center select-none">
       <div className="flex items-center gap-[clamp(4px,0.6vw,10px)]">
 
         {renderGroup(hoursStr, MAIN)}
-        <Sep />
+        <Sep isAnimMode={isAnimMode} dotColor={dotColor} textStyle={textStyle} glowStyle={glowStyle} sz={MAIN} />
         {renderGroup(minutesStr, MAIN)}
 
         {showSeconds && (
           <>
-            <Sep opacity={0.45} sz={SEC} />
+            <Sep isAnimMode={isAnimMode} dotColor={dotColor} textStyle={textStyle} glowStyle={glowStyle} opacity={0.45} sz={SEC} />
             {renderGroup(secondsStr, SEC)}
           </>
         )}

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { TimeProvider } from './contexts/TimeContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -19,9 +20,11 @@ if (bootSplash && bootSplash.parentElement === rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <TimeProvider>
-      <App />
-    </TimeProvider>
+    <ErrorBoundary>
+      <TimeProvider>
+        <App />
+      </TimeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

@@ -352,6 +352,8 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
+  // CSS 像素尺寸（与 devicePixelRatio 解耦），粒子坐标与边界判定统一使用此值
+  const dimensionsRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
 
   // Hand Detection Refs
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -360,6 +362,8 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
   const lastGestureTypeRef = useRef<GestureType>(GestureType.NONE);
   // 粒子物理直接读此 ref，不触发 React re-render
   const interactionRef = useRef<InteractionState>({ type: GestureType.NONE, x: 0, y: 0, strength: 0 });
+  // 主题明暗标记用 ref 跟踪，主题切换时不重建整个粒子系统（仅影响新建粒子的颜色）
+  const isLightThemeRef = useRef<boolean>(theme.id === ThemeId.MINIMAL_LIGHT);
   // 每隔 N 帧才跑一次推理（15fps 检测 + 60fps 渲染，分离两个循环）
   const frameCountRef = useRef<number>(0);
   const DETECT_EVERY_N = 4; // 60fps ÷ 4 ≈ 15fps 推理
@@ -463,6 +467,7 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
   // 2. Initialize Camera
   useEffect(() => {
     let stream: MediaStream | null = null;
+    let isMounted = true;
     if (isCameraEnabled) {
       const startVideo = async () => {
         setCameraStatus('Requesting camera...');
@@ -482,6 +487,12 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
               facingMode: 'user'
             }
           });
+
+          // 组件在 await 期间卸载：立即释放刚拿到的 stream
+          if (!isMounted) {
+            stream.getTracks().forEach(track => track.stop());
+            return;
+          }
 
           setCameraStatus('Camera stream obtained');
 
@@ -503,9 +514,11 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
             videoRef.current.height = 240;
             videoRef.current.srcObject = stream;
             await videoRef.current.play();
+            if (!isMounted) return;
             setCameraStatus(`Camera OK (${videoRef.current.videoWidth}x${videoRef.current.videoHeight})`);
           }
         } catch (err) {
+          if (!isMounted) return;
           console.error("Camera Error:", err);
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
           setCameraStatus(`Camera Error: ${errorMsg}`);
@@ -515,8 +528,14 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     }
 
     return () => {
+      isMounted = false;
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
+      }
+      // 彻底释放 video 元素，避免 srcObject 持有已关闭的 stream
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.srcObject = null;
       }
     };
   }, [isCameraEnabled]);
@@ -528,22 +547,28 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const isLightTheme = theme.id === ThemeId.MINIMAL_LIGHT;
-
     const initParticles = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // 适配 devicePixelRatio：canvas 内部尺寸用设备像素，绘制坐标用 CSS 像素
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      dimensionsRef.current = { w, h };
+      canvas.width  = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width  = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const COUNT_MAP: Partial<Record<ParticleMode, number>> = {
         [ParticleMode.SNOW]:   PARTICLE_COUNT.SNOW,
-        [ParticleMode.STARS]:  PARTICLE_COUNT.STARS,
+        [ParticleMode.STARS]:   PARTICLE_COUNT.STARS,
         [ParticleMode.RAIN]:   PARTICLE_COUNT.RAIN,
         [ParticleMode.MATRIX]: PARTICLE_COUNT.MATRIX,
       };
       const count = COUNT_MAP[mode] ?? 0;
 
       particlesRef.current = Array.from({ length: count }, () =>
-        new Particle(canvas.width, canvas.height, mode, isLightTheme)
+        new Particle(w, h, mode, isLightThemeRef.current)
       );
     };
 
@@ -554,12 +579,13 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
 
       const landmarks = results.landmarks[0];
 
-      // Calculate screen positions
-      const screenX = (1 - landmarks[0].x) * canvas.width;
-      const screenY = landmarks[0].y * canvas.height;
+      // Calculate screen positions（使用 CSS 像素，与粒子坐标系一致）
+      const { w: cw, h: ch } = dimensionsRef.current;
+      const screenX = (1 - landmarks[0].x) * cw;
+      const screenY = landmarks[0].y * ch;
 
-      const indexTipX = (1 - landmarks[8].x) * canvas.width;
-      const indexTipY = landmarks[8].y * canvas.height;
+      const indexTipX = (1 - landmarks[8].x) * cw;
+      const indexTipY = landmarks[8].y * ch;
 
       const wrist = landmarks[0];
       const middleMCP = landmarks[9];
@@ -604,8 +630,9 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     };
 
     const animate = () => {
+      const { w, h } = dimensionsRef.current;
       if (mode === ParticleMode.NONE) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, w, h);
         return;
       }
 
@@ -631,12 +658,12 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
       }
 
       // 2. Clear
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, w, h);
 
       // 3. Update Particles（读 interactionRef，不依赖 React state，无需等待重渲染）
       const ci = interactionRef.current;
       particlesRef.current.forEach(p => {
-        p.update(canvas.width, canvas.height, mode, ci);
+        p.update(w, h, mode, ci);
         p.draw(ctx, mode, ci);
       });
 
@@ -646,8 +673,13 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     initParticles();
     animate();
 
+    // 防抖 200ms，避免拖拽窗口时频繁重建粒子丢失状态
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
-      initParticles();
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        initParticles();
+      }, 200);
     };
 
     window.addEventListener('resize', handleResize);
@@ -655,10 +687,17 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
     return () => {
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', handleResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
     };
   // 移除 isModelLoading 依赖：模型加载完毕不应重建整个粒子系统
   // landmarkerRef.current 在推理前会做 null 检查，无需在 effect 层感知
-  }, [mode, theme.id, isCameraEnabled]);
+  // theme.id 不再作为依赖：主题切换仅更新 isLightThemeRef，不重建粒子系统
+  }, [mode, isCameraEnabled]);
+
+  // 主题切换时同步 isLightThemeRef（不触发粒子重建，仅影响新建粒子的颜色）
+  useEffect(() => {
+    isLightThemeRef.current = theme.id === ThemeId.MINIMAL_LIGHT;
+  }, [theme.id]);
 
   if (mode === ParticleMode.NONE) return null;
 
