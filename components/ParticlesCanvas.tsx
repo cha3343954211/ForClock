@@ -364,9 +364,8 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
   const interactionRef = useRef<InteractionState>({ type: GestureType.NONE, x: 0, y: 0, strength: 0 });
   // 主题明暗标记用 ref 跟踪，主题切换时不重建整个粒子系统（仅影响新建粒子的颜色）
   const isLightThemeRef = useRef<boolean>(theme.id === ThemeId.MINIMAL_LIGHT);
-  // 每隔 N 帧才跑一次推理（15fps 检测 + 60fps 渲染，分离两个循环）
-  const frameCountRef = useRef<number>(0);
-  const DETECT_EVERY_N = 4; // 60fps ÷ 4 ≈ 15fps 推理
+  // 推理循环 ID（独立于 RAF，不阻塞渲染帧）
+  const detectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [gestureState, setGestureState] = useState<InteractionState>({ type: GestureType.NONE, x: 0, y: 0, strength: 0 });
   const [isModelLoading, setIsModelLoading] = useState(false);
@@ -636,19 +635,110 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
         return;
       }
 
-      // 1. Detect Hands（每 DETECT_EVERY_N 帧跑一次推理，其余帧复用上次结果）
-      frameCountRef.current++;
+      // 2. Clear
+      ctx.clearRect(0, 0, w, h);
+
+      // 3. Update & Draw Particles（读 interactionRef，不依赖 React state，无需等待重渲染）
+      const ci = interactionRef.current;
+      const particles = particlesRef.current;
+
+      // 批量绘制：同类型粒子合并 path，减少 Canvas 状态切换
+      // 圆形粒子（SNOW/STARS）：合并到一个 path
+      // 线段粒子（RAIN）：合并到一个 path
+      // MATRIX：fillText 无法批量，逐个绘制
+      if (mode === ParticleMode.MATRIX) {
+        ctx.font = `${14}px monospace`;
+        ctx.textBaseline = 'top';
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.update(w, h, mode, ci);
+          ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+          ctx.fillText(p.char, p.x, p.y);
+        }
+      } else if (mode === ParticleMode.RAIN) {
+        // 批量绘制雨线：所有线段合并到一个 path
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.update(w, h, mode, ci);
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.vx * 2, p.y + p.size);
+        }
+        // 按颜色分组 stroke：大多数雨滴同色，先画主体
+        const mainColor = isLightThemeRef.current ? '100, 100, 150' : '150, 200, 255';
+        ctx.strokeStyle = `rgba(${mainColor}, 0.2)`;
+        ctx.stroke();
+
+        // 受手势影响的雨滴颜色可能变化，单独绘制
+        ctx.beginPath();
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.color !== mainColor && p.isAffected) {
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x + p.vx * 2, p.y + p.size);
+          }
+        }
+        ctx.strokeStyle = `rgba(255, 255, 255, 0.3)`;
+        ctx.stroke();
+      } else {
+        // SNOW / STARS：圆形粒子合并绘制
+        ctx.beginPath();
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.update(w, h, mode, ci);
+          ctx.moveTo(p.x + p.size, p.y);
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        }
+        // 主体颜色一次性 fill
+        const mainColor = isLightThemeRef.current ? '0, 0, 0' : '255, 255, 255';
+        ctx.fillStyle = `rgba(${mainColor}, 0.5)`;
+        ctx.fill();
+
+        // STARS 连线：限制最多 30 条，避免大量 stroke 调用
+        if (mode === ParticleMode.STARS && ci.type !== GestureType.NONE) {
+          let connectionsDrawn = 0;
+          const connectDist = ci.type === GestureType.FIST ? 800 : 250;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < particles.length && connectionsDrawn < 30; i++) {
+            const p = particles[i];
+            if (!p.isAffected) continue;
+            const dx = p.x - ci.x;
+            const dy = p.y - ci.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < connectDist) {
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(ci.x, ci.y);
+              connectionsDrawn++;
+            }
+          }
+          if (connectionsDrawn > 0) {
+            const lineColor = ci.type === GestureType.FIST ? '0, 255, 255'
+              : ci.type === GestureType.OPEN_HAND ? '255, 100, 100' : '255, 255, 200';
+            ctx.strokeStyle = `rgba(${lineColor}, 0.3)`;
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    // 推理循环：独立于 RAF，用 setTimeout 在主线程空闲时执行
+    // MediaPipe detectForVideo 是同步阻塞调用（20-50ms），放在 RAF 内会直接导致掉帧
+    // 分离后 RAF 渲染帧不被阻塞，粒子保持 60fps 流畅
+    const detectLoop = () => {
       if (
         isCameraEnabled &&
         landmarkerRef.current &&
         videoRef.current &&
-        frameCountRef.current % DETECT_EVERY_N === 0 &&
         videoRef.current.currentTime !== lastVideoTimeRef.current
       ) {
         lastVideoTimeRef.current = videoRef.current.currentTime;
         const results = landmarkerRef.current.detectForVideo(videoRef.current, performance.now());
         const detected = processHandGesture(results);
-        interactionRef.current = detected; // 粒子物理读 ref，零 re-render
+        interactionRef.current = detected;
 
         // UI 指示器：仅手势类型变化时才触发 React 重渲染
         if (detected.type !== lastGestureTypeRef.current) {
@@ -656,22 +746,16 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
           setGestureState(detected);
         }
       }
-
-      // 2. Clear
-      ctx.clearRect(0, 0, w, h);
-
-      // 3. Update Particles（读 interactionRef，不依赖 React state，无需等待重渲染）
-      const ci = interactionRef.current;
-      particlesRef.current.forEach(p => {
-        p.update(w, h, mode, ci);
-        p.draw(ctx, mode, ci);
-      });
-
-      animationRef.current = requestAnimationFrame(animate);
+      // 66ms ≈ 15fps 推理频率，足够手势识别实时性
+      detectTimerRef.current = setTimeout(detectLoop, 66);
     };
 
     initParticles();
     animate();
+    // 启动独立推理循环（仅摄像头开启时有效，detectLoop 内部会检查 isCameraEnabled）
+    if (isCameraEnabled) {
+      detectLoop();
+    }
 
     // 防抖 200ms，避免拖拽窗口时频繁重建粒子丢失状态
     let resizeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -686,6 +770,10 @@ export const ParticlesCanvas: React.FC<ParticlesCanvasProps> = ({ mode, theme, i
 
     return () => {
       cancelAnimationFrame(animationRef.current);
+      if (detectTimerRef.current) {
+        clearTimeout(detectTimerRef.current);
+        detectTimerRef.current = null;
+      }
       window.removeEventListener('resize', handleResize);
       if (resizeTimer) clearTimeout(resizeTimer);
     };
