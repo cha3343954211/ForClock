@@ -23,10 +23,10 @@ const App: React.FC = () => {
   const widgetsCtx   = useWidgets();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [forestBgError, setForestBgError]           = useState(false);
   const [wisdom, setWisdom]                         = useState('');
   const [isGeneratingWisdom, setIsGeneratingWisdom] = useState(false);
   const [controlsVisible, setControlsVisible]       = useState(false);
+  const [forestBgError, setForestBgError]           = useState(false); // picsum 加载失败时回退本地 SVG
 
   const currentTheme = THEMES[settings.themeId];
   const {
