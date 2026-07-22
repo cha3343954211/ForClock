@@ -1,10 +1,10 @@
 import { ThemeId, ThemeConfig } from './types';
 
-// 森林主题背景：使用本地 SVG，不依赖外部图片服务
-// 每次会话随机 hue-rotate 滤镜值，让背景色调有变化
-const _forestHue = Math.floor(Math.random() * 60) - 30; // -30° ~ +30°
-export const FOREST_BG_URL = `/forest-bg.svg`;
-export const FOREST_BG_HUE_FILTER = `hue-rotate(${_forestHue}deg)`;
+// 森林主题背景：优先使用 picsum.photos 在线随机图片，网络不可达时回退本地 SVG
+// 每次会话随机 seed，刷新得到不同图片；同会话内不闪烁
+const _forestSeed = Math.floor(Math.random() * 9999) + 1;
+export const FOREST_BG_URL = `https://picsum.photos/seed/${_forestSeed}/1920/1080?grayscale&blur=2`;
+export const FOREST_BG_FALLBACK = '/forest-bg.svg';
 
 export const THEMES: Record<ThemeId, ThemeConfig> = {
   [ThemeId.MINIMAL_DARK]: {

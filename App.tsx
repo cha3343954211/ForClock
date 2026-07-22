@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
-import { THEMES, FOREST_BG_URL, FOREST_BG_HUE_FILTER } from './constants';
+import { THEMES, FOREST_BG_FALLBACK } from './constants';
 import { ParticleMode, WidgetType } from './types';
 import { DigitalClock } from './components/DigitalClock';
 import { TimerDisplay } from './components/TimerDisplay';
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [wisdom, setWisdom]                         = useState('');
   const [isGeneratingWisdom, setIsGeneratingWisdom] = useState(false);
   const [controlsVisible, setControlsVisible]       = useState(false);
+  const [forestBgError, setForestBgError]           = useState(false); // picsum 加载失败时回退本地 SVG
 
   const currentTheme = THEMES[settings.themeId];
   const {
@@ -158,17 +159,24 @@ const App: React.FC = () => {
       >
         {/* 背景图层 */}
         {(settings.customBackground || currentTheme.backgroundImage) && (() => {
-          const bgUrl = settings.customBackground || currentTheme.backgroundImage;
-          const isForestBg = !settings.customBackground && currentTheme.backgroundImage === FOREST_BG_URL;
+          const bgUrl = settings.customBackground
+            || (forestBgError ? FOREST_BG_FALLBACK : currentTheme.backgroundImage);
           return (
-            <div
-              className={`absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ${settings.customBackground ? 'opacity-100' : 'opacity-40 mix-blend-overlay'}`}
-              style={{
-                backgroundImage: `url(${bgUrl})`,
-                // 森林主题：每次会话随机色调，让背景有变化
-                filter: isForestBg ? FOREST_BG_HUE_FILTER : undefined,
-              }}
-            />
+            <>
+              <div
+                className={`absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000 ${settings.customBackground ? 'opacity-100' : 'opacity-40 mix-blend-overlay'}`}
+                style={{ backgroundImage: `url(${bgUrl})` }}
+              />
+              {!settings.customBackground && currentTheme.backgroundImage && (
+                <img
+                  src={currentTheme.backgroundImage}
+                  className="hidden"
+                  onError={() => setForestBgError(true)}
+                  onLoad={() => setForestBgError(false)}
+                  alt=""
+                />
+              )}
+            </>
           );
         })()}
         {settings.customBackground && (
