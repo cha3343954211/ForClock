@@ -97,9 +97,12 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
     : null;
 
   const isGradient = activePreset?.type === 'gradient';
-  // useId 生成唯一 id，避免多实例 gradient def 冲突；去掉 ':' 防止 CSS 选择器转义问题
+  // useId 生成唯一 id，避免多实例 gradient/filter def 冲突；去掉 ':' 防止 CSS 选择器转义问题
   const rawId = useId();
-  const gradientId = `clock-gradient-${rawId.replace(/:/g, '')}`;
+  const safeId = rawId.replace(/:/g, '');
+  const gradientId = `clock-gradient-${safeId}`;
+  const shadowFilterId = `hand-shadow-${safeId}`;
+  const faceGlowId = `face-glow-${safeId}`;
 
   // Helper to determine stroke color
   const getStrokeColor = (_fallbackClass: string) => {
@@ -164,23 +167,28 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
             </linearGradient>
           )}
           {/* Soft radial face background for tactile depth */}
-          <radialGradient id="faceGlow" cx="50%" cy="45%" r="60%">
+          <radialGradient id={faceGlowId} cx="50%" cy="45%" r="60%">
             <stop offset="0%"   stopColor="rgba(255,255,255,0.06)" />
             <stop offset="70%"  stopColor="rgba(255,255,255,0)" />
             <stop offset="100%" stopColor="rgba(0,0,0,0.18)" />
           </radialGradient>
-          {/* Hand soft shadow filter */}
-          <filter id="handShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="0.5" />
-            <feOffset dx="0" dy="0.4" result="off" />
-            <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
-            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+          {/* Hand soft shadow filter — 显式 in/result 避免浏览器歧义 */}
+          <filter id={shadowFilterId} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
+            <feOffset in="blur" dx="0" dy="0.4" result="off" />
+            <feComponentTransfer in="off" result="shadow">
+              <feFuncA type="linear" slope="0.45" />
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode in="shadow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
         </defs>
 
         {/* ── BACKGROUND DEPTH (除 minimal/modern 外都铺底) ────── */}
         {hasFace && (
-          <circle cx="50" cy="50" r="46" fill="url(#faceGlow)" />
+          <circle cx="50" cy="50" r="46" fill={`url(#${faceGlowId})`} />
         )}
 
         {/* ── FACE ─────────────────────────────────────────────── */}
@@ -329,7 +337,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
                className={trans ? 'transition-transform duration-300 ease-linear' : ''}>
               <line x1="50" y1="56" x2="50" y2="25"
                 stroke={sc} strokeWidth={faceStyle === 'minimal' ? 2.2 : 2.6} strokeLinecap="round"
-                filter="url(#handShadow)"
+                filter={!isGradient ? `url(#${shadowFilterId})` : undefined}
                 className={!customColor && !isGradient ? theme.textClass : ''} />
             </g>
           )
@@ -354,7 +362,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({
                className={trans ? 'transition-transform duration-300 ease-linear' : ''}>
               <line x1="50" y1="58" x2="50" y2="14"
                 stroke={sc} strokeWidth={faceStyle === 'minimal' ? 1.4 : 1.6} strokeLinecap="round"
-                filter="url(#handShadow)"
+                filter={!isGradient ? `url(#${shadowFilterId})` : undefined}
                 className={!customColor && !isGradient ? theme.textClass : ''} />
             </g>
           )
